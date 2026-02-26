@@ -15,3 +15,9 @@ spring:
   
   jackson:
     time-zone: Asia/Kolkata
+    serialization:
+      write-dates-as-timestamps: false
+
+server:
+  error:
+    include-stacktrace: never

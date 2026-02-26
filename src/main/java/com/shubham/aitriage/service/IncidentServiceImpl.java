@@ -25,6 +25,7 @@ public class IncidentServiceImpl implements IncidentService {
         newIncident.setTitle(incident.getTitle());
         newIncident.setDescription(incident.getDescription());
         newIncident.setStatus(Status.OPEN);
+        newIncident.setSeverity(incident.getSeverity());
         newIncident.setCreatedAt(LocalDateTime.now());
         Incident savedIncident = incidentRepository.save(newIncident);
         return IncidentResponseDTO.builder()
