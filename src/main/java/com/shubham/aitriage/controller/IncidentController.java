@@ -3,7 +3,12 @@ package com.shubham.aitriage.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.shubham.aitriage.service.IncidentService;
-import com.shubham.aitriage.dto.ApiResponse;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+
+import com.shubham.aitriage.dto.ApiStandardResponse;
 import com.shubham.aitriage.dto.IncidentRequestDTO;
 import com.shubham.aitriage.dto.IncidentResponseDTO;
 import java.util.List;
@@ -25,10 +30,15 @@ import jakarta.validation.Valid;
 public class IncidentController {
     private final IncidentService incidentService;
 
+    @Operation(summary = "Create a new incident")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Incident created successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid input data")
+    })
     @PostMapping("/create")
-    public ResponseEntity<ApiResponse<IncidentResponseDTO>> create(@Valid @RequestBody IncidentRequestDTO request){
+    public ResponseEntity<ApiStandardResponse<IncidentResponseDTO>> create(@Valid @RequestBody IncidentRequestDTO request){
         IncidentResponseDTO response = incidentService.createIncident(request);
-            ApiResponse<IncidentResponseDTO> apiResponse=ApiResponse.<IncidentResponseDTO>builder()
+            ApiStandardResponse<IncidentResponseDTO> apiResponse=ApiStandardResponse.<IncidentResponseDTO>builder()
                 .success(true)
                 .message("Incident created successfully")
                 .data(response)
@@ -37,10 +47,14 @@ public class IncidentController {
             return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
         }
 
+    @Operation(summary = "Get all incidents")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Incidents retrieved successfully")
+    })
     @GetMapping("/getall")
-    public ResponseEntity<ApiResponse<List<IncidentResponseDTO>>> getAllIncidents() {
+    public ResponseEntity<ApiStandardResponse<List<IncidentResponseDTO>>> getAllIncidents() {
         List<IncidentResponseDTO> incidents = incidentService.getAllIncidents();
-        ApiResponse<List<IncidentResponseDTO>> apiResponse = ApiResponse.<List<IncidentResponseDTO>>builder()
+        ApiStandardResponse<List<IncidentResponseDTO>> apiResponse = ApiStandardResponse.<List<IncidentResponseDTO>>builder()
             .success(true)
             .message("Incidents retrieved successfully")
             .data(incidents)
