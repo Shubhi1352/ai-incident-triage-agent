@@ -1,0 +1,13 @@
+package com.shubham.aitriage;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class AiIncidentTriageAgentApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(AiIncidentTriageAgentApplication.class, args);
+	}
+
+}
