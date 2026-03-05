@@ -1,6 +1,7 @@
 package com.shubham.aitriage.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.shubham.aitriage.service.IncidentService;
 
@@ -12,6 +13,7 @@ import com.shubham.aitriage.dto.ApiStandardResponse;
 import com.shubham.aitriage.dto.IncidentRequestDTO;
 import com.shubham.aitriage.dto.IncidentResponseDTO;
 import com.shubham.aitriage.dto.IncidentUpdateRequestDTO;
+import com.shubham.aitriage.enums.Severity;
 
 import java.util.List;
 import java.time.LocalDateTime;
@@ -20,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -120,5 +123,26 @@ public class IncidentController {
             .message("Incident deleted successfully")
             .timestamp(LocalDateTime.now())
             .build());
+    }
+
+    @GetMapping("/getincidents")
+    @Operation(summary = "Get all incidents with pagination and search")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Incidents retrieved successfully")
+    })
+    public ResponseEntity<ApiStandardResponse<Page<IncidentResponseDTO>>> getIncidents(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) Severity severity,
+        @RequestParam(required = false) String title
+    ){
+        Page<IncidentResponseDTO> incidents=incidentService.getIncidents(page, size, severity, title);
+        ApiStandardResponse<Page<IncidentResponseDTO>> apiresponse= ApiStandardResponse.<Page<IncidentResponseDTO>>builder()
+            .success(true)
+            .message("Incidents retrieved successfully")
+            .data(incidents)
+            .timestamp(LocalDateTime.now())
+            .build();
+        return ResponseEntity.ok(apiresponse);
     }
 }

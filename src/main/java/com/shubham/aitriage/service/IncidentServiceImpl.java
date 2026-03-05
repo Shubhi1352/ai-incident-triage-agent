@@ -1,5 +1,9 @@
 package com.shubham.aitriage.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -13,6 +17,7 @@ import com.shubham.aitriage.dto.IncidentRequestDTO;
 import com.shubham.aitriage.dto.IncidentResponseDTO;
 import com.shubham.aitriage.dto.IncidentUpdateRequestDTO;
 import com.shubham.aitriage.entity.Incident;
+import com.shubham.aitriage.enums.Severity;
 import com.shubham.aitriage.enums.Status;
 
 @Service
@@ -74,5 +79,19 @@ public class IncidentServiceImpl implements IncidentService {
     public void deleteIncident(Long id){
         Incident incident = incidentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Incident not found with id: "+id));
         incidentRepository.delete(incident);
+    }
+
+    @Override
+    public Page<IncidentResponseDTO> getIncidents(int page,int size, Severity severity, String title){
+        Pageable pageable = PageRequest.of(page,size,Sort.by("createdAt").descending());
+        Page<Incident> incidentPage;
+        if(severity != null){
+            incidentPage = incidentRepository.findBySeverity(severity, pageable);
+        }else if(title != null && !title.isEmpty()){
+            incidentPage = incidentRepository.findByTitleContainingIgnoreCase(title, pageable);
+        }else{
+            incidentPage = incidentRepository.findAll(pageable);
+        }
+        return incidentPage.map(this::mapToResponseDTO);
     }
 }
