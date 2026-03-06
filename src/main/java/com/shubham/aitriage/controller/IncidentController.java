@@ -13,6 +13,7 @@ import com.shubham.aitriage.dto.ApiStandardResponse;
 import com.shubham.aitriage.dto.IncidentRequestDTO;
 import com.shubham.aitriage.dto.IncidentResponseDTO;
 import com.shubham.aitriage.dto.IncidentUpdateRequestDTO;
+import com.shubham.aitriage.dto.PageResponse;
 import com.shubham.aitriage.enums.Severity;
 
 import java.util.List;
@@ -130,14 +131,14 @@ public class IncidentController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Incidents retrieved successfully")
     })
-    public ResponseEntity<ApiStandardResponse<Page<IncidentResponseDTO>>> getIncidents(
+    public ResponseEntity<ApiStandardResponse<PageResponse<IncidentResponseDTO>>> getIncidents(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(required = false) Severity severity,
         @RequestParam(required = false) String title
     ){
-        Page<IncidentResponseDTO> incidents=incidentService.getIncidents(page, size, severity, title);
-        ApiStandardResponse<Page<IncidentResponseDTO>> apiresponse= ApiStandardResponse.<Page<IncidentResponseDTO>>builder()
+        PageResponse<IncidentResponseDTO> incidents=incidentService.getIncidents(page, size, severity, title);
+        ApiStandardResponse<PageResponse<IncidentResponseDTO>> apiresponse= ApiStandardResponse.<PageResponse<IncidentResponseDTO>>builder()
             .success(true)
             .message("Incidents retrieved successfully")
             .data(incidents)

@@ -16,6 +16,7 @@ import com.shubham.aitriage.exception.ResourceNotFoundException;
 import com.shubham.aitriage.dto.IncidentRequestDTO;
 import com.shubham.aitriage.dto.IncidentResponseDTO;
 import com.shubham.aitriage.dto.IncidentUpdateRequestDTO;
+import com.shubham.aitriage.dto.PageResponse;
 import com.shubham.aitriage.entity.Incident;
 import com.shubham.aitriage.enums.Severity;
 import com.shubham.aitriage.enums.Status;
@@ -82,7 +83,7 @@ public class IncidentServiceImpl implements IncidentService {
     }
 
     @Override
-    public Page<IncidentResponseDTO> getIncidents(int page,int size, Severity severity, String title){
+    public PageResponse<IncidentResponseDTO> getIncidents(int page,int size, Severity severity, String title){
         Pageable pageable = PageRequest.of(page,size,Sort.by("createdAt").descending());
         Page<Incident> incidentPage;
         if(severity != null){
@@ -92,6 +93,17 @@ public class IncidentServiceImpl implements IncidentService {
         }else{
             incidentPage = incidentRepository.findAll(pageable);
         }
-        return incidentPage.map(this::mapToResponseDTO);
+        List<IncidentResponseDTO> items=incidentPage
+            .getContent()
+            .stream().map(this::mapToResponseDTO)
+            .toList();
+
+        return PageResponse.<IncidentResponseDTO>builder()
+            .items(items)
+            .currentPage(incidentPage.getNumber())
+            .pageSize(incidentPage.getSize())
+            .totalItems(incidentPage.getTotalElements())
+            .totalPages(incidentPage.getTotalPages())
+            .build();
     }
 }
