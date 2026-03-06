@@ -5,6 +5,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 import lombok.RequiredArgsConstructor;
 import java.time.LocalDateTime;
@@ -25,6 +27,9 @@ import com.shubham.aitriage.enums.Status;
 @RequiredArgsConstructor
 public class IncidentServiceImpl implements IncidentService {
 
+    public static final String INCIDENT_CACHE = "incidents";
+public static final String INCIDENT_PAGE_CACHE = "incidents_page";
+
     private final IncidentRepository incidentRepository;
 
     private IncidentResponseDTO mapToResponseDTO(Incident incident) {
@@ -38,6 +43,7 @@ public class IncidentServiceImpl implements IncidentService {
             .build();
     }
 
+    @CacheEvict(value = {INCIDENT_PAGE_CACHE}, allEntries = true)
     @Override
     public IncidentResponseDTO createIncident(IncidentRequestDTO incident) {
         Incident newIncident = new Incident();
@@ -60,12 +66,14 @@ public class IncidentServiceImpl implements IncidentService {
         return response;
     }
 
+    @Cacheable(value = INCIDENT_CACHE, key = "#id")
     @Override
     public IncidentResponseDTO getIncidentById(Long id){
         Incident incident = incidentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Incident not found with id: "+id));
         return mapToResponseDTO(incident);
     }
 
+    @CacheEvict(value = {INCIDENT_CACHE, INCIDENT_PAGE_CACHE}, allEntries = true)
     @Override
     public IncidentResponseDTO updateIncident(Long id, IncidentUpdateRequestDTO request){
         Incident incident =  incidentRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Incident not found with id: "+id));
@@ -76,17 +84,21 @@ public class IncidentServiceImpl implements IncidentService {
         return mapToResponseDTO(updatedIncident);
     }
 
+    @CacheEvict(value = {INCIDENT_CACHE, INCIDENT_PAGE_CACHE}, allEntries = true)
     @Override
     public void deleteIncident(Long id){
         Incident incident = incidentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Incident not found with id: "+id));
         incidentRepository.delete(incident);
     }
 
+    @Cacheable(value = INCIDENT_PAGE_CACHE, key = "#page + '-' + #size + '-' + #severity + '-' + #title")
     @Override
     public PageResponse<IncidentResponseDTO> getIncidents(int page,int size, Severity severity, String title){
         Pageable pageable = PageRequest.of(page,size,Sort.by("createdAt").descending());
         Page<Incident> incidentPage;
-        if(severity != null){
+        if(severity != null && title != null && !title.isEmpty()){
+            incidentPage = incidentRepository.findBySeverityAndTitleContainingIgnoreCase(severity, title, pageable);
+        }else if(severity != null){
             incidentPage = incidentRepository.findBySeverity(severity, pageable);
         }else if(title != null && !title.isEmpty()){
             incidentPage = incidentRepository.findByTitleContainingIgnoreCase(title, pageable);

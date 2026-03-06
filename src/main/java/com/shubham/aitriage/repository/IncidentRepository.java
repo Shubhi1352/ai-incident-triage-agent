@@ -13,4 +13,5 @@ import com.shubham.aitriage.entity.Incident;
 public interface IncidentRepository extends JpaRepository<Incident,Long>{
     public Page<Incident> findBySeverity(Severity severity,Pageable pageable);
     public Page<Incident> findByTitleContainingIgnoreCase(String title,Pageable pageable);
+    public Page<Incident> findBySeverityAndTitleContainingIgnoreCase(Severity severity, String title, Pageable pageable);
 }
