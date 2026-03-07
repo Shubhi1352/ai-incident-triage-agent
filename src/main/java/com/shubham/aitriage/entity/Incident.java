@@ -7,6 +7,8 @@ import com.shubham.aitriage.enums.Status;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -30,9 +32,11 @@ public class Incident {
     @Column(length = 2000)
     private String description;
     private String errorLog;
+    @Enumerated(EnumType.STRING)
     private Severity severity;
     private String rootCause;
     private String aiSuggestion;
+    @Enumerated(EnumType.STRING)
     private Status status;
     private LocalDateTime createdAt;
 }

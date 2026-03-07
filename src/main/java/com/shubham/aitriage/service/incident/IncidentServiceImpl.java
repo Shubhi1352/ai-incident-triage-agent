@@ -13,8 +13,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
 import com.shubham.aitriage.repository.IncidentRepository;
+import com.shubham.aitriage.service.aiAnalysis.AIAnalysisService;
 import com.shubham.aitriage.exception.ResourceNotFoundException;
-
+import com.shubham.aitriage.dto.AIAnalysisResponse;
 import com.shubham.aitriage.dto.IncidentRequestDTO;
 import com.shubham.aitriage.dto.IncidentResponseDTO;
 import com.shubham.aitriage.dto.IncidentUpdateRequestDTO;
@@ -28,16 +29,20 @@ import com.shubham.aitriage.enums.Status;
 public class IncidentServiceImpl implements IncidentService {
 
     public static final String INCIDENT_CACHE = "incidents";
-public static final String INCIDENT_PAGE_CACHE = "incidents_page";
+    public static final String INCIDENT_PAGE_CACHE = "incidents_page";
 
     private final IncidentRepository incidentRepository;
+    private final AIAnalysisService aiAnalysisService;
 
     private IncidentResponseDTO mapToResponseDTO(Incident incident) {
     return IncidentResponseDTO.builder()
             .id(incident.getId())
             .title(incident.getTitle())
             .description(incident.getDescription())
+            .errorLog(incident.getErrorLog())
             .severity(incident.getSeverity())
+            .aiSuggestion(incident.getAiSuggestion())
+            .rootCause(incident.getRootCause())
             .status(incident.getStatus())
             .createdAt(incident.getCreatedAt())
             .build();
@@ -45,12 +50,24 @@ public static final String INCIDENT_PAGE_CACHE = "incidents_page";
 
     @CacheEvict(value = {INCIDENT_PAGE_CACHE}, allEntries = true)
     @Override
-    public IncidentResponseDTO createIncident(IncidentRequestDTO incident) {
+    public IncidentResponseDTO createIncident(IncidentRequestDTO request) {
+        AIAnalysisResponse aiResult;
+        try{
+            aiResult = aiAnalysisService.analyzeIncident(
+                request.getTitle(), request.getDescription(), request.getErrorLog()
+            );
+        }catch( Exception e){
+            throw new RuntimeException("AI analysis failed");
+        }
+
         Incident newIncident = new Incident();
-        newIncident.setTitle(incident.getTitle());
-        newIncident.setDescription(incident.getDescription());
+        newIncident.setTitle(request.getTitle());
+        newIncident.setDescription(request.getDescription());
+        newIncident.setErrorLog(request.getErrorLog());
         newIncident.setStatus(Status.OPEN);
-        newIncident.setSeverity(incident.getSeverity());
+        newIncident.setSeverity(Severity.valueOf(aiResult.getSeverity()));
+        newIncident.setRootCause(aiResult.getRootCause());
+        newIncident.setAiSuggestion(aiResult.getSuggestion());
         newIncident.setCreatedAt(LocalDateTime.now());
         Incident savedIncident = incidentRepository.save(newIncident);
         return mapToResponseDTO(savedIncident);

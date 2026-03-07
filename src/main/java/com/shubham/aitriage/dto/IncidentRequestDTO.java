@@ -1,7 +1,5 @@
 package com.shubham.aitriage.dto;
 
-import com.shubham.aitriage.enums.Severity;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -15,8 +13,7 @@ public class IncidentRequestDTO {
     @NotBlank(message = "Description is mandatory")
     @Size(max = 2000, message = "Description must be less than 2000 characters")
     private String description;
+    @NotNull(message = "Error log cannot be null")
     @Size(max = 2000, message = "Error log must be less than 2000 characters")
     private String errorLog;
-    @NotNull(message = "Severity is mandatory")
-    private Severity severity;
 }

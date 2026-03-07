@@ -18,7 +18,10 @@ public class IncidentResponseDTO implements Serializable {
     private Long id;
     private String title;
     private String description;
+    private String errorLog;
     private Severity severity;
+    private String rootCause;
+    private String aiSuggestion;
     private Status status;
     private LocalDateTime createdAt;
 }
