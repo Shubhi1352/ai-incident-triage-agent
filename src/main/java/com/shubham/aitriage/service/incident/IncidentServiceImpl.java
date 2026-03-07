@@ -1,4 +1,4 @@
-package com.shubham.aitriage.service;
+package com.shubham.aitriage.service.incident;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

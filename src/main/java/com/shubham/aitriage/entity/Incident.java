@@ -29,7 +29,10 @@ public class Incident {
     private String title;
     @Column(length = 2000)
     private String description;
+    private String errorLog;
     private Severity severity;
+    private String rootCause;
+    private String aiSuggestion;
     private Status status;
     private LocalDateTime createdAt;
 }

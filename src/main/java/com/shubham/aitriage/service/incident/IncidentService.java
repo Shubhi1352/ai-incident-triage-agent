@@ -1,4 +1,4 @@
-package com.shubham.aitriage.service;
+package com.shubham.aitriage.service.incident;
 
 import com.shubham.aitriage.dto.IncidentRequestDTO;
 import com.shubham.aitriage.dto.IncidentResponseDTO;

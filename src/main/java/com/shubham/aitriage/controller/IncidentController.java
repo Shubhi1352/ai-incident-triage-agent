@@ -3,7 +3,6 @@ package com.shubham.aitriage.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.shubham.aitriage.service.IncidentService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -15,6 +14,7 @@ import com.shubham.aitriage.dto.IncidentResponseDTO;
 import com.shubham.aitriage.dto.IncidentUpdateRequestDTO;
 import com.shubham.aitriage.dto.PageResponse;
 import com.shubham.aitriage.enums.Severity;
+import com.shubham.aitriage.service.incident.IncidentService;
 
 import java.util.List;
 import java.time.LocalDateTime;

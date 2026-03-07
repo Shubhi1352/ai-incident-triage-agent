@@ -26,3 +26,7 @@ spring:
 server:
   error:
     include-stacktrace: never
+
+ai:
+  ollama:
+    url: http://localhost:11434/api
