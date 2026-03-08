@@ -8,11 +8,18 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import com.shubham.aitriage.dto.AIChatResponse;
+import com.shubham.aitriage.dto.ChatMessageDTO;
+import com.shubham.aitriage.dto.PageResponse;
 import com.shubham.aitriage.entity.Incident;
 import com.shubham.aitriage.entity.IncidentChat;
 import com.shubham.aitriage.enums.ChatRole;
+import com.shubham.aitriage.exception.ResourceNotFoundException;
 import com.shubham.aitriage.repository.IncidentChatRepository;
 import com.shubham.aitriage.repository.IncidentRepository;
 
@@ -29,10 +36,18 @@ public class AIChatServiceImpl implements AIChatService{
     private final IncidentChatRepository chatRepository;
     private final RestTemplate restTemplate;
 
+    private ChatMessageDTO mapChatMessageDTO(IncidentChat incidentChat){
+        return ChatMessageDTO.builder()
+            .role(incidentChat.getRole())
+            .message(incidentChat.getMessage())
+            .createdAt(incidentChat.getCreatedAt())
+            .build();
+    }
+
     @Override
     public AIChatResponse chat(Long incidentId, String message){
         Incident incident = incidentRepository.findById(incidentId)
-            .orElseThrow(()->new RuntimeException("Incident not found"));
+            .orElseThrow(()->new ResourceNotFoundException("Incident not found"));
 
         chatRepository.save(IncidentChat.builder()
             .incidentId(incidentId)
@@ -102,5 +117,24 @@ public class AIChatServiceImpl implements AIChatService{
         return AIChatResponse.builder()
             .answer(aiText)
             .build();
+    }
+
+    @Override
+    public PageResponse<ChatMessageDTO> getChatHistory(Long incidentId,int page,int size){
+        incidentRepository.findById(incidentId).orElseThrow(()->new ResourceNotFoundException("Incident not found"));
+        Pageable pageable = PageRequest.of(page,size,Sort.by("createdAt").descending());
+        Page<IncidentChat> chats = chatRepository.findByIncidentId(incidentId, pageable);
+        List<ChatMessageDTO> items = chats.getContent()
+            .stream()
+            .map(this::mapChatMessageDTO)
+            .toList();
+  
+        return PageResponse.<ChatMessageDTO>builder()
+            .items(items)
+            .currentPage(chats.getNumber())
+            .pageSize(chats.getSize())
+            .totalItems(chats.getTotalElements())
+            .totalPages(chats.getTotalPages())
+            .build();       
     }
 }
