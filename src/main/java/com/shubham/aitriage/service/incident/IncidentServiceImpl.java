@@ -13,9 +13,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
 import com.shubham.aitriage.repository.IncidentRepository;
-import com.shubham.aitriage.service.aiAnalysis.AIAnalysisService;
-import com.shubham.aitriage.exception.ResourceNotFoundException;
-import com.shubham.aitriage.dto.AIAnalysisResponse;
+import com.shubham.aitriage.service.producer.IncidentProducer;
+import com.shubham.aitriage.exception.ResourceNotFoundException;  
 import com.shubham.aitriage.dto.IncidentRequestDTO;
 import com.shubham.aitriage.dto.IncidentResponseDTO;
 import com.shubham.aitriage.dto.IncidentUpdateRequestDTO;
@@ -32,7 +31,7 @@ public class IncidentServiceImpl implements IncidentService {
     public static final String INCIDENT_PAGE_CACHE = "incidents_page";
 
     private final IncidentRepository incidentRepository;
-    private final AIAnalysisService aiAnalysisService;
+    private final IncidentProducer incidentProducer;
 
     private IncidentResponseDTO mapToResponseDTO(Incident incident) {
     return IncidentResponseDTO.builder()
@@ -51,25 +50,16 @@ public class IncidentServiceImpl implements IncidentService {
     @CacheEvict(value = {INCIDENT_PAGE_CACHE}, allEntries = true)
     @Override
     public IncidentResponseDTO createIncident(IncidentRequestDTO request) {
-        AIAnalysisResponse aiResult;
-        try{
-            aiResult = aiAnalysisService.analyzeIncident(
-                request.getTitle(), request.getDescription(), request.getErrorLog()
-            );
-        }catch( Exception e){
-            throw new RuntimeException("AI analysis failed");
-        }
-
+        
         Incident newIncident = new Incident();
         newIncident.setTitle(request.getTitle());
         newIncident.setDescription(request.getDescription());
         newIncident.setErrorLog(request.getErrorLog());
-        newIncident.setStatus(Status.OPEN);
-        newIncident.setSeverity(Severity.valueOf(aiResult.getSeverity()));
-        newIncident.setRootCause(aiResult.getRootCause());
-        newIncident.setAiSuggestion(aiResult.getSuggestion());
+        newIncident.setStatus(Status.PROCESSING);
         newIncident.setCreatedAt(LocalDateTime.now());
+
         Incident savedIncident = incidentRepository.save(newIncident);
+        incidentProducer.sendIncidentForProcessing(savedIncident.getId());
         return mapToResponseDTO(savedIncident);
     }
 
