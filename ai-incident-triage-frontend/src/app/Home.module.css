@@ -1,0 +1,42 @@
+/* src/app/Home.module.css */
+
+.main {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  transition: transform 0.8s ease-in-out, opacity 0.8s ease-in-out;
+}
+
+.home {
+  z-index: 3;
+}
+
+.create {
+  z-index: 2;
+}
+
+.history {
+  z-index: 1;
+}
+
+.incidentPageContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  transition: transform 0.8s ease-in-out, opacity 0.8s ease-in-out;
+}

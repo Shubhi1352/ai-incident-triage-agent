@@ -1,0 +1,83 @@
+/* src/components/Navbar.module.css */
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 1.5rem 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+  background: linear-gradient(
+    to bottom,
+    rgba(80, 80, 80, 0.3) 100%,
+    rgba(0, 0, 0, 0.5) 50%,
+    rgba(80, 80, 80, 0.3) 100%
+  );
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-sizing: border-box;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logoText {
+  font-size: 1.25rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #f967fb 0%, #53bc28 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.navLinks {
+  display: flex;
+  gap: 2.5rem;
+}
+
+.navLink {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+  text-shadow: none; /* Initial state: no shadow */
+}
+
+.navLink:hover {
+  color: #fff; /* Keep white text on hover */
+  /* ✅ Bold gray text shadow only - no gradient */
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.6),
+               0 0 10px rgba(0, 0, 0, 0.5),
+               0 0 15px rgba(0, 0, 0, 0.4),
+               0 0 20px rgba(0, 0, 0, 0.3),
+               0 0 25px rgba(0, 0, 0, 0.2),
+               0 0 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 1rem 2rem;
+  }
+
+  .logoText {
+    font-size: 1rem;
+  }
+
+  .navLinks {
+    gap: 1.5rem;
+  }
+
+  .navLink {
+    font-size: 0.875rem;
+  }
+}

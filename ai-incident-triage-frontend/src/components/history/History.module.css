@@ -1,0 +1,197 @@
+/* src/app/history/History.module.css */
+
+.main {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  padding: 8rem 2rem 2rem 2rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 2rem;
+  text-shadow: 0 0 20px rgba(0, 0, 0, 1);
+}
+
+.searchContainer {
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 2rem;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 1rem;
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+}
+
+.searchInput:focus {
+  outline: none;
+}
+
+.incidentContainer {
+  width: 100%;
+  max-width: 1200px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+}
+
+.incidentHeader {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 1rem;
+  padding: 1rem 2rem;
+  background-color: rgba(0, 0, 0, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.incidentHeaderItem {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.incidentList {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.incidentItem {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 1rem;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.incidentItem:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.incidentTitle h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 0.5rem 0;
+}
+
+.incidentTitle p {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.incidentSeverity, .incidentStatus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.incidentDate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Severity Colors */
+.critical {
+  background-color: rgba(255, 0, 0, 0.2);
+  color: #ff0000;
+}
+
+.high {
+  background-color: rgba(255, 165, 0, 0.2);
+  color: #ffa500;
+}
+
+.medium {
+  background-color: rgba(255, 255, 0, 0.2);
+  color: #ffff00;
+}
+
+.low {
+  background-color: rgba(0, 255, 0, 0.2);
+  color: #00ff00;
+}
+
+/* Status Colors */
+.open {
+  background-color: rgba(255, 165, 0, 0.2);
+  color: #ffa500;
+}
+
+.inprogress {
+  background-color: rgba(0, 128, 255, 0.2);
+  color: #0080ff;
+}
+
+.resolved {
+  background-color: rgba(0, 255, 0, 0.2);
+  color: #00ff00;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    padding: 6rem 1rem 1rem 1rem;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .incidentHeader {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  .incidentItem {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .incidentSeverity, .incidentStatus, .incidentDate {
+    justify-content: flex-start;
+  }
+}
