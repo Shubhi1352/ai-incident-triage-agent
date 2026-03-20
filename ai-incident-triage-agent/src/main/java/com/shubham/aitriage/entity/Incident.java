@@ -31,6 +31,7 @@ public class Incident {
     private String title;
     @Column(length = 2000)
     private String description;
+    @Column(length = 2000)
     private String errorLog;
     @Enumerated(EnumType.STRING)
     private Severity severity;

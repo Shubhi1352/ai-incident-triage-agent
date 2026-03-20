@@ -1,3 +1,4 @@
+"use client";
 // src/components/HeroContent.tsx
 import React from 'react';
 import styles from './HeroContent.module.css';

@@ -31,7 +31,7 @@ const TubeCursorBackground: React.FC = () => {
         import TubesCursor from 'https://cdn.jsdelivr.net/npm/threejs-components@0.0.19/build/cursors/tubes1.min.js';
         const app = TubesCursor(document.getElementById('tube-canvas'), {
           tubes: {
-            colors: ["${primaryColor}", "${secondaryColor}}", "${tertiaryColor}"],
+            colors: ["${primaryColor}", "${secondaryColor}", "${tertiaryColor}"],
             lights: {
               intensity: 200,
               colors: ["${lightColors.join('", "')}"]

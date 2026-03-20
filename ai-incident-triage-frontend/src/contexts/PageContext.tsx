@@ -1,21 +1,9 @@
 // src/contexts/PageContext.tsx
 "use client";
-
+import { Incident, Severity, Status } from "@/components/history/History";
 import React, { createContext, useContext, useState } from "react";
 
 type Page = "home" | "create" | "history" | "incident";
-
-export interface Incident {
-  id: number;
-  title: string;
-  description: string;
-  errorLog: string;
-  severity: string | null;
-  rootcause: string | null;
-  suggestedFix: string | null;
-  status: string;
-  date: string;
-}
 
 interface PageContextType {
   currentPage: Page;

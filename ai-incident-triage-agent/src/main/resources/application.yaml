@@ -30,3 +30,20 @@ server:
 ai:
   ollama:
     url: http://localhost:11434/api
+    model: phi3
+    num_ctx: 2048
+    num_threads: 4
+    num_gpu: 0
+
+
+rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+    listener:
+      simple:
+        concurrency: 3
+        max-concurrency: 5
+        auto-startup: true

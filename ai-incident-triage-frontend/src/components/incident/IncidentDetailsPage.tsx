@@ -5,53 +5,63 @@ import React, { useEffect, useState } from "react";
 import styles from "./IncidentDetailsPage.module.css";
 import { usePage } from "@/contexts/PageContext";
 import { useColors } from "@/contexts/ColorContext";
+import { AIChatService, IncidentService, IncidentWSMessage } from "@/service/api";
+import { IncidentResponseDTO } from "@/service/api";
+import { useIncidentWebSocket } from "@/hooks/useIncidentWebSocket";
 
 const IncidentDetailsPage: React.FC = () => {
-  const { currentIncident, isWebSocketLoading, setIsWebSocketLoading, navigateTo } = usePage();
+  const handleWebSocketMessage = (wsMessage: IncidentWSMessage) => {
+    if (wsMessage.incident) {
+      setIncident(wsMessage.incident);
+    }
+  };
+  const { currentIncident, navigateTo } = usePage();
   const { primaryColor } = useColors();
   const [chatMessages, setChatMessages] = useState<{ role: "user" | "ai"; content: string }[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [incident, setIncident] = useState<IncidentResponseDTO | null>(currentIncident);
 
-  // Mock WebSocket connection
+  useIncidentWebSocket(incident?.id, handleWebSocketMessage);
+
   useEffect(() => {
-    if (!currentIncident) return;
+    const fetchIncident = async () => {
+      if (!currentIncident) return;
 
-    setIsWebSocketLoading(true);
+      try {
+        const response = await IncidentService.getIncidentById(currentIncident.id);
+        setIncident(response.data);
+      } catch (err) {
+        setError("Failed to fetch incident details");
+      }
+    };
 
-    // Simulate WebSocket connection and AI processing
-    const timer = setTimeout(() => {
-      const updatedIncident = {
-        ...currentIncident,
-        severity: "High",
-        rootCause: "Database connection timeout",
-        suggestedFix: "Increase database connection pool size",
-        status: "COMPLETED"
-      };
+    fetchIncident();
+    
+  }, [currentIncident]);
 
-      setIsWebSocketLoading(false);
-      // Update incident state here (you would normally get this from WebSocket)
-      setChatMessages([
-        { role: "ai", content: `I've analyzed the incident. The root cause is ${updatedIncident.rootCause}.` },
-        { role: "ai", content: `Suggested fix: ${updatedIncident.suggestedFix}` }
-      ]);
-    }, 3000);
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !incident) return;
 
-    return () => clearTimeout(timer);
-  }, [currentIncident, setIsWebSocketLoading]);
+    setIsLoading(true);
+    setError("");
 
-  const handleSendMessage = () => {
-    if (!newMessage.trim()) return;
+    try {
+      setChatMessages([...chatMessages, { role: "user", content: newMessage }]);
+      setNewMessage("");
 
-    setChatMessages([...chatMessages, { role: "user", content: newMessage }]);
-    setNewMessage("");
-
-    // Simulate AI response
-    setTimeout(() => {
-      setChatMessages([...chatMessages, { role: "user", content: newMessage }, { role: "ai", content: "I'm analyzing your question..." }]);
-    }, 1000);
+      const response = await AIChatService.chat(incident.id, newMessage);
+      setChatMessages([...chatMessages, { role: "user", content: newMessage }, { role: "ai", content: response.data.answer }]);
+    } catch (err) {
+      setError("Failed to get AI response");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  if (!currentIncident) return null;
+  if (!incident) return <div className={styles.loading}>Loading incident details...</div>;
+  if (error) return <div className={styles.error}>{error}</div>;
 
   return (
     <div className={styles.container}>
@@ -72,50 +82,49 @@ const IncidentDetailsPage: React.FC = () => {
         {/* Incident Details */}
         <div className={styles.incidentDetails}>
           <div className={styles.detailsHeader}>
-            <h2>{currentIncident.title}</h2>
-            <div className={`${styles.status} ${styles[currentIncident.status.toLowerCase()]}`}>
-              {currentIncident.status}
+            <h2>{incident.title}</h2>
+            <div className={`${styles.status} ${styles[incident.status?.toString().toLowerCase() || '']}`}>
+              {incident.status}
             </div>
           </div>
 
-          {isWebSocketLoading ? (
-            <div className={styles.loadingContainer}>
-              <div className={styles.loadingSpinner}></div>
-              <p>AI is analyzing the incident...</p>
+          <div className={styles.detailsSection}>
+            <h3>Description</h3>
+            <p>{incident.description}</p>
+          </div>
+
+          <div className={styles.detailsSection}>
+            <h3>Error Log</h3>
+            <pre className={styles.errorLog}>{incident.errorLog}</pre>
+          </div>
+
+          {incident.severity && (
+            <div className={styles.detailsSection}>
+              <h3>Severity</h3>
+              <p>{incident.severity || "N/A"}</p>
             </div>
-          ) : (
-            <>
-              <div className={styles.detailsSection}>
-                <h3>Description</h3>
-                <p>{currentIncident.description}</p>
-              </div>
+          )}
 
-              <div className={styles.detailsSection}>
-                <h3>Error Log</h3>
-                <pre className={styles.errorLog}>{currentIncident.errorLog}</pre>
-              </div>
+          {incident.rootCause && (
+            <div className={styles.detailsSection}>
+              <h3>Root Cause</h3>
+              <p>{incident.rootCause || "N/A"}</p>
+            </div>
+          )}
 
-              <div className={styles.detailsSection}>
-                <h3>Severity</h3>
-                <p>{currentIncident.severity}</p>
-              </div>
-
-              <div className={styles.detailsSection}>
-                <h3>Root Cause</h3>
-                <p>{currentIncident.rootcause}</p>
-              </div>
-
-              <div className={styles.detailsSection}>
-                <h3>Suggested Fix</h3>
-                <p>{currentIncident.suggestedFix}</p>
-              </div>
-            </>
+          {incident.aiSuggestion && (
+            <div className={styles.detailsSection}>
+              <h3>Suggested Fix</h3>
+              <p>{incident.aiSuggestion || "N/A"}</p>
+            </div>
           )}
         </div>
 
         {/* AI Chat */}
         <div className={styles.aiChat}>
           <h3 className={styles.chatTitle}>AI Assistant</h3>
+          
+          {error && <div className={styles.error}>{error}</div>}
           
           <div className={styles.chatMessages}>
             {chatMessages.map((message, index) => (
@@ -133,14 +142,17 @@ const IncidentDetailsPage: React.FC = () => {
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+              disabled={isLoading}
               style={{
                 borderColor: primaryColor,
                 boxShadow: `0 0 10px ${primaryColor}20`
               }}
             />
-            <button className={styles.sendButton} onClick={handleSendMessage} style={{
+            <button className={styles.sendButton} onClick={handleSendMessage} disabled={isLoading} style={{
               background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}80 100%)`
-            }}>Send</button>
+            }}>
+              {isLoading ? "Sending..." : "Send"}
+            </button>
           </div>
         </div>
       </div>

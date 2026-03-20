@@ -14,7 +14,8 @@ import java.util.List;
 import java.util.ArrayList;
 import com.shubham.aitriage.repository.IncidentRepository;
 import com.shubham.aitriage.service.producer.IncidentProducer;
-import com.shubham.aitriage.exception.ResourceNotFoundException;  
+import com.shubham.aitriage.exception.ResourceNotFoundException;
+import com.shubham.aitriage.dto.AIAnalysisResponse;
 import com.shubham.aitriage.dto.IncidentRequestDTO;
 import com.shubham.aitriage.dto.IncidentResponseDTO;
 import com.shubham.aitriage.dto.IncidentUpdateRequestDTO;
@@ -23,9 +24,13 @@ import com.shubham.aitriage.entity.Incident;
 import com.shubham.aitriage.enums.Severity;
 import com.shubham.aitriage.enums.Status;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;  
+
 @Service
 @RequiredArgsConstructor
 public class IncidentServiceImpl implements IncidentService {
+    private static final Logger log = LoggerFactory.getLogger(IncidentServiceImpl.class);
 
     public static final String INCIDENT_CACHE = "incidents";
     public static final String INCIDENT_PAGE_CACHE = "incidents_page";
@@ -59,6 +64,7 @@ public class IncidentServiceImpl implements IncidentService {
         newIncident.setCreatedAt(LocalDateTime.now());
 
         Incident savedIncident = incidentRepository.save(newIncident);
+        log.info("Calling producer to send incident {} for processing", savedIncident.getId());
         incidentProducer.sendIncidentForProcessing(savedIncident.getId());
         return mapToResponseDTO(savedIncident);
     }
@@ -124,5 +130,19 @@ public class IncidentServiceImpl implements IncidentService {
             .totalItems(incidentPage.getTotalElements())
             .totalPages(incidentPage.getTotalPages())
             .build();
+    }
+
+    @CacheEvict(value = {INCIDENT_PAGE_CACHE, INCIDENT_CACHE}, allEntries = true)
+    @Override
+    public Incident processAIResult(Long incidentId, AIAnalysisResponse analysisResponse){
+        Incident incident = incidentRepository.findById(incidentId).orElseThrow(() -> new ResourceNotFoundException("Incident not found with id : "+incidentId));
+        incident.setSeverity(Severity.valueOf(analysisResponse.getSeverity()));
+        incident.setRootCause(analysisResponse.getRootCause());
+        incident.setAiSuggestion(analysisResponse.getSuggestion());
+        incident.setStatus(Status.TRIAGED);
+        Incident saved = incidentRepository.save(incident);
+        log.info("Incident {} processed by AI. Cache evicted successfully.", incidentId);
+        
+        return saved;
     }
 }

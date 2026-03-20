@@ -1,48 +1,54 @@
-// src/contexts/ColorContext.tsx
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
 
-interface ColorContextType {
+interface ColorState {
   primaryColor: string;
   secondaryColor: string;
   tertiaryColor: string;
   lightColors: string[];
+}
+
+interface ColorContextType extends ColorState {
   changeColors: () => void;
 }
 
 const ColorContext = createContext<ColorContextType | undefined>(undefined);
 
 const randomColors = (count: number): string[] => {
-    return new Array(count).fill(0).map(() => 
-      "#" + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')
-    );
+  return new Array(count).fill(0).map(() =>
+    "#" + Math.floor(Math.random() * 16777215).toString(16).padStart(6, "0")
+  );
+};
+
+const generateColors = (): ColorState => {
+  const [primary, secondary, tertiary] = randomColors(3);
+  const lights = randomColors(4);
+
+  return {
+    primaryColor: primary,
+    secondaryColor: secondary,
+    tertiaryColor: tertiary,
+    lightColors: lights
   };
+};
 
 export const ColorProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [primaryColor, setPrimaryColor] = useState(randomColors(1)[0]);
-  const [secondaryColor, setSecondaryColor] = useState(randomColors(1)[0]);
-  const [tertiaryColor, setTertiaryColor] = useState(randomColors(1)[0]);
-  const [lightColors, setLightColors] = useState(randomColors(4));
+
+  // Only ONE state
+  const [colors, setColors] = useState<ColorState>({
+    primaryColor: "#0c1588",
+    secondaryColor: "#8965f6",
+    tertiaryColor: "#5a3df0",
+    lightColors: ["#ffffff","#eeeeff","#ddddff","#ccccff"]
+  });
 
   const changeColors = () => {
-    const [newPrimary, newSecondary, newTertiary] = randomColors(3);
-    const newLightColors = randomColors(4);
-    
-    setPrimaryColor(newPrimary);
-    setSecondaryColor(newSecondary);
-    setTertiaryColor(newTertiary);
-    setLightColors(newLightColors);
+    setColors(generateColors());
   };
-  
+
   return (
-    <ColorContext.Provider value={{
-      primaryColor,
-      secondaryColor,
-      tertiaryColor,
-      lightColors,
-      changeColors
-    }}>
+    <ColorContext.Provider value={{ ...colors, changeColors }}>
       {children}
     </ColorContext.Provider>
   );
@@ -50,8 +56,6 @@ export const ColorProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
 export const useColors = () => {
   const context = useContext(ColorContext);
-  if (context === undefined) {
-    throw new Error("useColors must be used within a ColorProvider");
-  }
+  if (!context) throw new Error("useColors must be used within ColorProvider");
   return context;
 };

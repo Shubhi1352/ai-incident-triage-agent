@@ -1,47 +1,138 @@
-// src/components/CreateIncidentForm.tsx
-import React from 'react';
-import styles from './CreateIncidentForm.module.css';
-import { useColors } from '@/contexts/ColorContext';
+// src/components/form/CreateIncidentForm.tsx
+"use client";
+
+import React, { useState } from "react";
+import styles from "./CreateIncidentForm.module.css";
+import { useColors } from "@/contexts/ColorContext";
+import { usePage } from "@/contexts/PageContext";
+import { IncidentService, IncidentWSMessage } from "@/service/api";
+import { useIncidentWebSocket } from "@/hooks/useIncidentWebSocket";
 
 const CreateIncidentForm: React.FC = () => {
-  const { primaryColor, secondaryColor } = useColors();
+  const { primaryColor,secondaryColor, tertiaryColor } = useColors();
+  const { navigateTo, setCurrentIncident } = usePage();
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [errorLog, setErrorLog] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [incidentId, setIncidentId] = useState<number | null>(null);
+
+  // WebSocket handler
+  const handleWebSocketMessage = (wsMessage: IncidentWSMessage) => {
+    if (wsMessage.status === "TRIAGED" && wsMessage.incident) {
+      setCurrentIncident(wsMessage.incident);
+      navigateTo("incident");
+    } else if (wsMessage.status === "FAILED") {
+      setError("AI Analysis failed. Please check history.");
+      setIsLoading(false);
+    }
+  };
+
+  useIncidentWebSocket(incidentId || undefined, handleWebSocketMessage);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
+    try {
+      if (!title.trim() || !description.trim() || !errorLog.trim()) {
+        throw new Error("All fields are required");
+      }
+
+      const response = await IncidentService.createIncident({ title, description, errorLog });
+      const createdId = response?.data?.id || response?.id;
+      if(!createdId) throw new Error("Failed to get incident ID");
+      setIncidentId(createdId);
+      //navigateTo("history");
+    } catch (err) {
+      setError("Failed to create incident. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className={styles.formContainer}>
-      <h1 className={styles.title}>Create Incident</h1>
-      <form className={styles.form}>
+    <div className={styles.container}>
+      <h1 className={styles.title}>Add Incident</h1>
+      
+      {/* ✅ Error notification */}
+      {error && (
+        <div className={styles.errorNotification}>
+          <div className={styles.errorIcon}>❌</div>
+          <div className={styles.errorMessage}>{error}</div>
+          <button className={styles.errorClose} onClick={() => setError("")}>×</button>
+        </div>
+      )}
+      {isLoading ? (
+        <div className={styles.loadingState}>
+          <div className={styles.spinner} style={{ borderColor: primaryColor }}></div>
+          <h3>Creating Incident...</h3>
+          <p>AI is analyzing the error log.<br />This may take a few seconds.</p>
+        </div>
+      ) : (
+      
+      <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.formGroup}>
           <label className={styles.label}>Title</label>
-          <input type="text" className={styles.input} placeholder="Enter incident title" 
-          style={{
-            borderColor: primaryColor,
-            boxShadow: `0 0 10px ${primaryColor}20`
-          }}/>
+          <input 
+            type="text" 
+            className={styles.input} 
+            placeholder="Enter incident title" 
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+            style={{
+              borderColor: primaryColor,
+              boxShadow: `0 0 8px ${primaryColor}20`
+            }}
+          />
         </div>
         <div className={styles.formGroup}>
           <label className={styles.label}>Description</label>
-          <textarea className={styles.textarea} placeholder="Enter incident description" rows={5} 
-          style={{
-            borderColor: primaryColor,
-            boxShadow: `0 0 10px ${primaryColor}20`
-          }}/>
+          <textarea 
+            className={styles.textarea} 
+            placeholder="Enter incident description" 
+            rows={4}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            required
+            style={{
+              borderColor: primaryColor,
+              boxShadow: `0 0 8px ${primaryColor}20`
+            }}
+          />
         </div>
         <div className={styles.formGroup}>
-          <label className={styles.label}>Severity</label>
-          <select className={styles.select} style={{
-            borderColor: primaryColor,
-            boxShadow: `0 0 10px ${primaryColor}20`
-          }}>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-            <option value="critical">Critical</option>
-          </select>
+          <label className={styles.label}>Error Log</label>
+          <textarea 
+            className={styles.textarea} 
+            placeholder="Enter error log" 
+            rows={4}
+            value={errorLog}
+            onChange={(e) => setErrorLog(e.target.value)}
+            required
+            style={{
+              borderColor: primaryColor,
+              boxShadow: `0 0 8px ${primaryColor}20`
+            }}
+          />
         </div>
-        <button type="submit" className={styles.button} style={{
-          background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`,
-          boxShadow: `0 10px 20px ${primaryColor}30`
-        }}>Create Incident</button>
+        <button 
+          type="submit" 
+          className={styles.button} 
+          disabled={isLoading}
+          style={{
+            '--primary': primaryColor,
+            '--secondary': secondaryColor,
+            '--tertiary': tertiaryColor,
+          } as React.CSSProperties}
+        >
+          {isLoading ? "Creating Incident..." : "Create Incident"}
+        </button>
       </form>
+      )}
     </div>
   );
 };
