@@ -16,169 +16,125 @@
 }
 
 .title {
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   font-weight: 700;
   color: #fff;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
+  letter-spacing: 2px;
   text-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
 }
 
-/* Loading State */
-.loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  padding: 3rem;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(255, 255, 255, 0.1);
-  border-top-color: transparent;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-.spinnerInner {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.8); }
-}
-
-/* Error Message */
-.errorMessage {
-  padding: 0.75rem 1.25rem;
-  background: rgba(255, 71, 87, 0.15);
-  border: 1px solid #ff4757;
-  border-radius: 8px;
-  color: #ff6b81;
-  margin-bottom: 1rem;
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-/* Search Container */
+/* ==================== SEARCH SECTION ==================== */
 .searchContainer {
   width: 100%;
-  max-width: 900px;
-  margin-bottom: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
+  max-width: 1100px;
+  margin-bottom: 1rem;
 }
 
 .searchRow {
   display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 0.75rem;
+  grid-template-columns: 3.5fr 1.4fr 0.9fr;
+  gap: 12px;
+  align-items: center;
 }
 
-.searchInput, .filterSelect {
-  padding: 0.625rem 1rem;
+.searchInput, .filterSelect, .searchButton {
+  padding: 0.65rem 1rem; /* Slightly smaller padding */
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.55);
   color: #fff;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
 }
 
 .searchInput::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.45);
 }
 
 .searchInput:focus, .filterSelect:focus {
   outline: none;
-  border-color: rgba(249, 103, 251, 0.5);
-  box-shadow: 0 0 12px rgba(249, 103, 251, 0.3);
-  background-color: rgba(0, 0, 0, 0.6);
+  border-color: var(--primary-color, #f967fb);
+  box-shadow: 0 0 15px rgba(249, 103, 251, 0.4);
+  background-color: rgba(0, 0, 0, 0.7);
 }
 
-.filterSelect {
+.searchButton {
+  background: linear-gradient(135deg, var(--primary-color, #f967fb), #ff6bcb);
+  border: none;
+  font-weight: 600;
   cursor: pointer;
+  color: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(249, 103, 251, 0.3);
 }
 
-.filterSelect option {
-  background: #1a1a1a;
-  color: #fff;
+.searchButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(249, 103, 251, 0.5);
 }
 
 .resultsInfo {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.55);
   text-align: right;
+  margin-top: 6px;
   font-weight: 500;
 }
 
-/* Incident Container */
+/* ==================== TABLE CONTAINER ==================== */
 .incidentContainer {
   width: 100%;
-  max-width: 900px;
+  max-width: 1100px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 12px;
-  background: rgba(20, 20, 30, 0.7);
+  background: rgba(20, 20, 30, 0.75);
   backdrop-filter: blur(15px);
-  overflow: hidden;
+  overflow: hidden; /* Important: keeps children inside rounded corners */
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.4);
+  
+  /* Flex layout to ensure Header + List + Pagination fit perfectly */
   display: flex;
   flex-direction: column;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  height: calc(100vh - 220px); /* Adjust based on your header height */
+  max-height: 680px; /* Cap height to fit 10 items nicely */
 }
 
+/* ==================== HEADER ==================== */
 .incidentHeader {
   display: grid;
-  grid-template-columns: 55% 20% 25%;
+  grid-template-columns: 46% 18% 22% 14%;
   gap: 1rem;
-  top: 0;
-  position: sticky;
+  padding: 0.8rem 1.25rem; /* Compact padding */
+  background: rgba(30, 30, 40, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
   color: #ccc;
   font-weight: 600;
-  padding: 0.75rem 1.25rem;
-  background: rgba(30, 30, 40, 0.8);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  z-index: 10;
-  text-align: left;
-}
-
-.incidentHeaderItem {
-  font-size: 0.6rem;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.75px;
+  letter-spacing: 0.8px;
+  flex-shrink: 0; /* Prevent header from shrinking */
 }
 
+/* ==================== LIST (SCROLLABLE AREA) ==================== */
 .incidentList {
-  /* ✅ No scrolling - all 10 items fit */
-  max-height: none;
-  overflow-y: auto;
+  flex-grow: 1; /* Takes available space */
+  overflow-y: auto; /* Scroll if needed */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.2) transparent;
 }
 
 .incidentItem {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  /*gap: 1rem;*/
-  padding: 5px 5px;
+  grid-template-columns: 46% 18% 22% 14%;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem; /* Compact row height */
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   cursor: pointer;
-  transition: all 0.3s ease;
-  background: rgba(255, 255, 255, 0.02);
+  transition: all 0.2s ease;
+  align-items: center;
 }
 
 .incidentItem:last-child {
@@ -187,203 +143,301 @@
 
 .incidentItem:hover {
   background: rgba(249, 103, 251, 0.08);
-  border-left: 3px solid rgba(249, 103, 251, 0.5);
-  padding-left: calc(1.25rem - 3px);
+  border-left: 4px solid #f967fb;
 }
 
-.incidentTitle {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
+/* Column Content */
 .incidentTitle h3 {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #fff;
   margin: 0;
-  line-height: 1.5;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #fff;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .incidentSeverity {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.375rem 0.875rem;
-  border-radius: 16px;
-  font-size: 0.7rem;
+  justify-self: center;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.75px;
-  justify-self: center;
 }
 
 .incidentDate {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.55);
   justify-self: center;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
   font-weight: 500;
 }
 
-/* ✅ Bright Severity Colors */
-.critical {
-  background: rgba(255, 71, 87, 0.4);
-  color: #ff8fa3;
-  border: 1px solid rgba(255, 71, 87, 0.7);
-  box-shadow: 0 0 12px rgba(255, 71, 87, 0.5);
+.incidentAction {
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.high {
-  background: rgba(255, 165, 2, 0.4);
-  color: #ffd580;
-  border: 1px solid rgba(255, 165, 2, 0.7);
-  box-shadow: 0 0 12px rgba(255, 165, 2, 0.5);
+/* New Delete Icon Style */
+.deleteButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.medium {
-  background: rgba(255, 221, 89, 0.4);
-  color: #fff4bf;
-  border: 1px solid rgba(255, 221, 89, 0.7);
-  box-shadow: 0 0 12px rgba(255, 221, 89, 0.5);
+.deleteButton svg {
+  width: 18px;
+  height: 18px;
+  fill: #ff6b6b;
+  transition: fill 0.2s;
 }
 
-.low {
-  background: rgba(123, 237, 159, 0.4);
-  color: #a8f5c4;
-  border: 1px solid rgba(123, 237, 159, 0.7);
-  box-shadow: 0 0 12px rgba(123, 237, 159, 0.5);
+.deleteButton:hover {
+  background: rgba(255, 107, 107, 0.15);
 }
 
-.unknown {
-  background: rgba(136, 136, 136, 0.3);
-  color: #d0d0d0;
-  border: 1px solid rgba(136, 136, 136, 0.5);
+.deleteButton:hover svg {
+  fill: #ff4757;
+  transform: scale(1.1);
 }
+
+/* Severity Colors */
+.critical { background: rgba(255, 71, 87, 0.25); color: #ff8fa3; border: 1px solid rgba(255, 71, 87, 0.4); }
+.high     { background: rgba(255, 165, 2, 0.25); color: #ffdd89; border: 1px solid rgba(255, 165, 2, 0.4); }
+.medium   { background: rgba(255, 221, 89, 0.25); color: #fff4bf; border: 1px solid rgba(255, 221, 89, 0.4); }
+.low      { background: rgba(123, 237, 159, 0.25); color: #a8f5c4; border: 1px solid rgba(123, 237, 159, 0.4); }
+.unknown  { background: rgba(136, 136, 136, 0.2); color: #ddd; border: 1px solid rgba(136, 136, 136, 0.3); }
 
 .emptyState {
   padding: 3rem 1.5rem;
   text-align: center;
   color: rgba(255, 255, 255, 0.45);
-  font-size: 0.85rem;
+  font-size: 0.9rem;
 }
 
-/* ✅ Pagination - Google Style */
+/* ==================== PAGINATION (FIXED) ==================== */
 .pagination {
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 1rem 1.25rem;
+  align-items: center;
+  gap: 8px;
+  padding: 0.8rem 1rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(30, 30, 40, 0.6);
+  background: rgba(25, 25, 35, 0.8);
+  flex-shrink: 0; /* Prevent pagination from shrinking */
 }
 
 .pageButton {
-  padding: 0.5rem 1rem;
+  padding: 6px 12px;
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  background: rgba(40, 40, 50, 0.8);
+  border-radius: 6px;
+  background: rgba(40, 40, 50, 0.6);
   color: rgba(255, 255, 255, 0.8);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .pageButton:hover:not(:disabled) {
-  background: rgba(249, 103, 251, 0.3);
+  background: rgba(249, 103, 251, 0.2);
   border-color: rgba(249, 103, 251, 0.5);
   color: #fff;
-  transform: translateY(-2px);
 }
 
 .pageButton:disabled {
-  opacity: 0.35;
+  opacity: 0.3;
   cursor: not-allowed;
-  transform: none;
 }
 
 .pageNumbers {
   display: flex;
-  gap: 0.375rem;
+  gap: 4px;
   align-items: center;
 }
 
 .pageNumber {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  background: rgba(40, 40, 50, 0.8);
+  border-radius: 6px;
+  background: rgba(40, 40, 50, 0.6);
   color: rgba(255, 255, 255, 0.7);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .pageNumber:hover {
-  background: rgba(249, 103, 251, 0.3);
+  background: rgba(249, 103, 251, 0.2);
   border-color: rgba(249, 103, 251, 0.5);
   color: #fff;
-  transform: translateY(-2px);
 }
 
 .pageNumber.active {
-  background: rgba(249, 103, 251, 0.8);
+  background: #f967fb;
   color: #fff;
-  border-color: rgba(249, 103, 251, 0.8);
-  box-shadow: 0 0 16px rgba(249, 103, 251, 0.6);
-  transform: translateY(-2px);
+  border-color: #f967fb;
+  box-shadow: 0 0 10px rgba(249, 103, 251, 0.4);
   font-weight: 700;
 }
 
 .pageEllipsis {
-  color: rgba(255, 255, 255, 0.35);
-  font-size: 0.75rem;
-  padding: 0 0.375rem;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.8rem;
+  padding: 0 4px;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .container {
-    padding: 3.5rem 1rem 1rem 1rem;
-  }
+  .searchRow { grid-template-columns: 1fr; }
+  .incidentHeader, .incidentItem { grid-template-columns: 1fr; }
+  .incidentHeader { display: none; }
+  .incidentContainer { height: auto; max-height: none; }
+}
 
-  .title {
-    font-size: 1.5rem;
-  }
+/* ... existing styles ... */
 
-  .searchRow {
-    grid-template-columns: 1fr;
-  }
+/* Loading Overlay inside list */
+.loadingOverlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: rgba(255, 255, 255, 0.7);
+}
 
-  .incidentHeader, .incidentItem {
-    grid-template-columns: 1fr;
-    gap: 0.625rem;
-  }
+/* Mini Spinner for page changes */
+.pageLoadingIndicator {
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0,0,0,0.2);
+}
 
-  .incidentHeader {
-    display: none;
-  }
+.miniSpinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(255,255,255,0.1);
+  border-radius: 50%;
+  border-top-color: var(--primary-color, #fff);
+  animation: spin 0.8s linear infinite;
+}
 
-  .pagination {
-    flex-wrap: wrap;
-  }
+/* ✅ Custom Modal Styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
 
-  .pageNumbers {
-    order: 3;
-    width: 100%;
-    justify-content: center;
-    margin-top: 0.5rem;
+.modalContent {
+  background: #1a1a2e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  transform: scale(0.95);
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.modalTitle {
+  margin: 0 0 1rem 0;
+  font-size: 1.2rem;
+  color: #fff;
+  font-weight: 600;
+}
+
+.modalText {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.modalText strong {
+  color: #fff;
+  display: block;
+  margin-top: 0.5rem;
+  word-break: break-word;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.cancelBtn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.cancelBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.deleteBtn {
+  border: none;
+  color: white;
+  padding: 8px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.deleteBtn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: scale(0.9) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .modalContent {
+    width: 85%;
   }
 }

@@ -40,4 +40,6 @@ public class Incident {
     @Enumerated(EnumType.STRING)
     private Status status;
     private LocalDateTime createdAt;
+    @Column(name = "retry_count")
+    private Integer retryCount=0;
 }

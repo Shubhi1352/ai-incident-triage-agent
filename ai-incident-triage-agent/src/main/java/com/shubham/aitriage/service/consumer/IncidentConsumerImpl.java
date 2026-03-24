@@ -17,6 +17,7 @@ import com.shubham.aitriage.exception.ResourceNotFoundException;
 import com.shubham.aitriage.entity.Incident;
 import com.shubham.aitriage.enums.Severity;
 import com.shubham.aitriage.enums.Status;
+import com.shubham.aitriage.service.producer.IncidentProducer;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +31,7 @@ public class IncidentConsumerImpl implements IncidentConsumer{
     private final AIAnalysisService aiAnalysisService;
     private final SimpMessagingTemplate messagingTemplate;
     private final IncidentService incidentService;
+    private final IncidentProducer incidentProducer;
 
     @RabbitListener(queues = RabbitMQConfig.INCIDENT_QUEUE, concurrency = "3")
     public void processIncident(Long incidentId){
@@ -44,6 +46,7 @@ public class IncidentConsumerImpl implements IncidentConsumer{
             incident.setRootCause(aiResult.getRootCause());
             incident.setAiSuggestion(aiResult.getSuggestion());
             incident.setStatus(Status.TRIAGED);
+            incident.setRetryCount(0);
 
             Incident updatedIncident = incidentService.processAIResult(incidentId, aiResult);
 
@@ -70,6 +73,7 @@ public class IncidentConsumerImpl implements IncidentConsumer{
             );
         }catch (Exception e){
             log.error("Failed to process incident {}", incidentId, e);
+            handleFailure(incidentId);
             messagingTemplate.convertAndSend(
                 "/topic/incidents/" + incidentId,
                 new IncidentWSMessage(
@@ -89,17 +93,31 @@ public class IncidentConsumerImpl implements IncidentConsumer{
         }
     }
 
-    private IncidentResponseDTO mapToResponseDTO(Incident incident) {
-        return IncidentResponseDTO.builder()
-            .id(incident.getId())
-            .title(incident.getTitle())
-            .description(incident.getDescription())
-            .errorLog(incident.getErrorLog())
-            .severity(incident.getSeverity())
-            .aiSuggestion(incident.getAiSuggestion())
-            .rootCause(incident.getRootCause())
-            .status(incident.getStatus())
-            .createdAt(incident.getCreatedAt())
-            .build();
+    private void handleFailure(Long incidentId){
+        try{
+            Incident incident = incidentRepository.findById(incidentId).orElse(null);
+            if(incident == null) return;
+            incident.setRetryCount(incident.getRetryCount()+1);
+            if(incident.getRetryCount()<=3){
+                log.warn("Re-queuing incident {} (Attempt {}/3)", incidentId, incident.getRetryCount());
+                incidentRepository.save(incident);
+                incidentProducer.sendIncidentForProcessing(incidentId);
+            }else {
+                incident.setStatus(Status.FAILED);
+                incidentRepository.save(incident);
+                log.error("Incident {} failed after 3 attempts. Marked as FAILED.", incidentId);
+
+                messagingTemplate.convertAndSend(
+                    "/topic/incidents/" + incidentId,
+                    new IncidentWSMessage(
+                        Status.FAILED, 
+                        "AI analysis failed after 3 attempts", 
+                        null
+                    )
+                );
+            }
+        } catch (Exception ex) {
+            log.error("Critical error while handling failure for incident {}", incidentId, ex);
+        }
     }
 }

@@ -17,15 +17,20 @@ const CreateIncidentForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [incidentId, setIncidentId] = useState<number | null>(null);
+  const [statusMessage, setStatusMessage] = useState("Creating Incident...");
 
   // WebSocket handler
   const handleWebSocketMessage = (wsMessage: IncidentWSMessage) => {
     if (wsMessage.status === "TRIAGED" && wsMessage.incident) {
+      setStatusMessage("Analysis Complete! Opening details...");
       setCurrentIncident(wsMessage.incident);
-      navigateTo("incident");
+      setTimeout(()=>{
+        navigateTo("incident");
+      }, 800);
     } else if (wsMessage.status === "FAILED") {
       setError("AI Analysis failed. Please check history.");
       setIsLoading(false);
+      setStatusMessage("Creation Failed");
     }
   };
 
@@ -35,7 +40,7 @@ const CreateIncidentForm: React.FC = () => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-
+    setStatusMessage("Submitting to AI...");
     try {
       if (!title.trim() || !description.trim() || !errorLog.trim()) {
         throw new Error("All fields are required");
@@ -44,6 +49,9 @@ const CreateIncidentForm: React.FC = () => {
       const response = await IncidentService.createIncident({ title, description, errorLog });
       const createdId = response?.data?.id || response?.id;
       if(!createdId) throw new Error("Failed to get incident ID");
+      setTitle("");
+      setDescription("");
+      setErrorLog("");
       setIncidentId(createdId);
       //navigateTo("history");
     } catch (err) {
@@ -68,8 +76,10 @@ const CreateIncidentForm: React.FC = () => {
       {isLoading ? (
         <div className={styles.loadingState}>
           <div className={styles.spinner} style={{ borderColor: primaryColor }}></div>
-          <h3>Creating Incident...</h3>
-          <p>AI is analyzing the error log.<br />This may take a few seconds.</p>
+          <h3>{statusMessage}</h3>
+          <p>Please wait while AI analyzes the error log.<br />This may take a few minutes.</p>
+          {!incidentId && <p style={{fontSize: '0.8rem', color: '#888'}}>Submitting request...</p>}
+          {incidentId && <p style={{fontSize: '0.8rem', color: '#888'}}>Waiting for analysis result...</p>}
         </div>
       ) : (
       
