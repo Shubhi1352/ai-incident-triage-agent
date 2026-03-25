@@ -99,7 +99,7 @@ public class AIChatServiceImpl implements AIChatService{
         }
         prompt.append("AI:");
         Map<String, Object> body = new HashMap<>();
-        body.put("model","llama3");
+        body.put("model","phi3");
         body.put("prompt", prompt.toString());
         body.put("stream",false);
 

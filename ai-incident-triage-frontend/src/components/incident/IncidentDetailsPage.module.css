@@ -1,264 +1,245 @@
-/* src/components/IncidentDetailsPage.module.css */
-
 .container {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   z-index: 10;
-  background-color: rgba(0, 0, 0, 0.7); /* ✅ Semi-transparent background */
-  backdrop-filter: blur(8px);
-  padding: 8rem 2rem 2rem 2rem;
-  box-sizing: border-box;
+  /*background: rgba(0, 0, 0, 0.75);*/
+  /*backdrop-filter: blur(10px);*/
+  padding: 4rem 1rem 1rem;
   overflow-y: auto;
 }
 
+/* ✅ CENTERED HEADER */
 .header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 0rem;
 }
 
 .title {
-  font-size: 3rem;
-  font-weight: 700;
-  margin: 0;
-}
-
-.backButton {
-  padding: 0.75rem 1.5rem;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  background-color: transparent;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 1rem;
+  font-size: 2.2rem;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  text-align: center;
 }
 
-.backButton:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
+/* ✅ PERFECT 50-50 SPLIT */
 .content {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  max-width: 1200px;
+  gap: 1.5rem;
+  max-width: 1100px;
   margin: 0 auto;
 }
 
+/* ================= LEFT PANEL ================= */
 .incidentDetails {
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  background-color: rgba(0, 0, 0, 0.8);
-  padding: 2rem;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  background: rgba(20,20,35,0.6);
+  backdrop-filter: blur(20px);
+  padding: 1.5rem;
 }
 
+/* header inside card */
 .detailsHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.2rem;
 }
 
 .detailsHeader h2 {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 1.2rem;
+  font-weight: 500;
   color: #fff;
-  margin: 0;
 }
 
+/* status pill */
 .status {
-  padding: 0.5rem 1rem;
+  padding: 0.3rem 0.8rem;
   border-radius: 20px;
-  font-size: 0.875rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.processing {
-  background-color: rgba(255, 165, 0, 0.2);
-  color: #ffa500;
-}
-
-.completed {
-  background-color: rgba(0, 255, 0, 0.2);
-  color: #00ff00;
-}
-
-.loadingContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 0;
-}
-
-.loadingSpinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid rgba(255, 255, 255, 0.2);
-  border-top: 4px solid #fff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
+/* smaller sections */
 .detailsSection {
-  margin-bottom: 2rem;
+  margin-bottom: 1.2rem;
 }
 
 .detailsSection h3 {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #fff;
-  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: #aaa;
+  margin-bottom: 0.3rem;
 }
 
 .detailsSection p {
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.8);
-  margin: 0;
-  line-height: 1.5;
+  font-size: 0.8rem;
+  color: #eee;
+  line-height: 1.4;
 }
 
+/* error log */
 .errorLog {
-  background-color: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  padding: 1rem;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 0.875rem;
-  line-height: 1.5;
+  background: rgba(0,0,0,0.5);
+  border-radius: 6px;
+  padding: 0.8rem;
+  font-size: 0.75rem;
+  color: #ddd;
   overflow-x: auto;
 }
 
+/* ================= RIGHT PANEL (CHAT) ================= */
 .aiChat {
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  background-color: rgba(0, 0, 0, 0.8);
-  padding: 2rem;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  background: rgba(20, 20, 35, 0.6);
+  padding: 1.2rem;
   display: flex;
   flex-direction: column;
-  height: fit-content;
+  height: 500px;
+  backdrop-filter: blur(20px);
 }
 
 .chatTitle {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 0.8rem;
   color: #fff;
-  margin: 0 0 1rem 0;
 }
 
+/* scrollable messages */
 .chatMessages {
   flex: 1;
-  max-height: 400px;
   overflow-y: auto;
-  margin-bottom: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.6rem;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.2) transparent;
 }
 
+/* 💬 WhatsApp style bubbles */
 .chatMessage {
-  max-width: 80%;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  line-height: 1.5;
+  max-width: 75%;
+  padding: 0.5rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  line-height: 1.4;
 }
 
+/* user (right side) */
 .user {
   align-self: flex-end;
-  background-color: rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
   color: #fff;
+  border-bottom-right-radius: 4px;
 }
 
+/* AI (left side) */
 .ai {
   align-self: flex-start;
-  background-color: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255,255,255,0.05);
+  color: #ddd;
+  border-bottom-left-radius: 4px;
 }
 
-.messageContent {
-  font-size: 0.875rem;
-}
-
+/* input area */
 .chatInputContainer {
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
 }
 
 .chatInput {
   flex: 1;
-  padding: 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.6rem;
   border-radius: 8px;
-  background-color: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(0,0,0,0.4);
   color: #fff;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
 }
 
 .chatInput:focus {
   outline: none;
 }
 
+/* dynamic button (color comes from inline style) */
 .sendButton {
-  padding: 0.75rem 1.5rem;
-  border: none;
+  padding: 0.5rem 1rem;
   border-radius: 8px;
-  background: linear-gradient(135deg, #f967fb 0%, #53bc28 100%);
-  color: #fff;
-  font-size: 0.875rem;
+  border: none;
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: 0.2s ease;
 }
 
 .sendButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(249, 103, 251, 0.3);
+  transform: scale(1.05);
 }
 
-/* Responsive Design */
+/* ================= STATES ================= */
+.error {
+  color: #ff4d4f;
+  font-size: 0.8rem;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #aaa;
+}
+
+/* ================= MOBILE ================= */
 @media (max-width: 768px) {
-  .container {
-    padding: 6rem 1rem 1rem 1rem;
-  }
-
-  .title {
-    font-size: 2rem;
-  }
-
   .content {
     grid-template-columns: 1fr;
   }
 
-  .chatMessage {
-    max-width: 100%;
+  .aiChat {
+    height: 400px;
   }
 }
 
-/* Add these to your existing CSS */
-.error {
-  color: #ff0000;
-  margin-bottom: 1rem;
-  font-size: 0.875rem;
+.triaged {
+  background: rgba(0, 255, 150, 0.15);
+  color: #00ffa6;
+  border: 1px solid rgba(0, 255, 150, 0.3);
 }
 
-.loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem;
-  color: rgba(255, 255, 255, 0.8);
+.processing {
+  background: rgba(255, 180, 0, 0.15);
+  color: #ffb400;
+  border: 1px solid rgba(255, 180, 0, 0.3);
+}
+
+.failed {
+  background: rgba(255, 70, 70, 0.15);
+  color: #ff4d4f;
+  border: 1px solid rgba(255, 70, 70, 0.3);
+}
+
+/* SEVERITY COLORS */
+.critical {
+  color: #ff3b3b;
+  font-weight: 600;
+}
+
+.high {
+  color: #ff7a00;
+  font-weight: 600;
+}
+
+.medium {
+  color: #ffd000;
+  font-weight: 600;
+}
+
+.low {
+  color: #00d084;
+  font-weight: 600;
 }

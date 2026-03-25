@@ -9,7 +9,12 @@ export const useIncidentWebSocket = (
   onMessage?: (message: IncidentWSMessage) => void
 ) => {
   const clientRef = useRef<Client | null>(null);
+  const onMessageRef = useRef<typeof onMessage>(onMessage);
 
+  useEffect(() => {
+    onMessageRef.current = onMessage;
+  }, [onMessage]);
+ 
   const connect = useCallback(() => {
     if (!incidentId) return;
 
@@ -26,7 +31,7 @@ export const useIncidentWebSocket = (
         try {
           const parsed = JSON.parse(message.body) as IncidentWSMessage;
           console.log('📨 WS Message received:', parsed);
-          onMessage?.(parsed);
+          onMessageRef.current?.(parsed);
         } catch (err) {
           console.error('Failed to parse WS message:', err);
         }
@@ -43,7 +48,7 @@ export const useIncidentWebSocket = (
 
     client.activate();
     clientRef.current = client;
-  }, [incidentId, onMessage]);
+  }, [incidentId]);
 
   const disconnect = useCallback(() => {
     clientRef.current?.deactivate();

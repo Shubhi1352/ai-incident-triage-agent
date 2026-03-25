@@ -1,20 +1,27 @@
 // src/components/IncidentDetailsPage.tsx
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import styles from "./IncidentDetailsPage.module.css";
 import { usePage } from "@/contexts/PageContext";
 import { useColors } from "@/contexts/ColorContext";
 import { AIChatService, IncidentService, IncidentWSMessage } from "@/service/api";
 import { IncidentResponseDTO } from "@/service/api";
-import { useIncidentWebSocket } from "@/hooks/useIncidentWebSocket";
+import { useIncidentWebSocket } from "@/hooks/useIncidentWebSocket"
+
+enum ChatRole{
+  USER = "USER",
+  AI = "AI"
+}
+
+interface ChatMessageDTO {
+    role: ChatRole;
+    message: string;
+    createdAt: string;
+}
 
 const IncidentDetailsPage: React.FC = () => {
-  const handleWebSocketMessage = (wsMessage: IncidentWSMessage) => {
-    if (wsMessage.incident) {
-      setIncident(wsMessage.incident);
-    }
-  };
+  
   const { currentIncident, navigateTo } = usePage();
   const { primaryColor } = useColors();
   const [chatMessages, setChatMessages] = useState<{ role: "user" | "ai"; content: string }[]>([]);
@@ -23,7 +30,17 @@ const IncidentDetailsPage: React.FC = () => {
   const [error, setError] = useState("");
   const [incident, setIncident] = useState<IncidentResponseDTO | null>(currentIncident);
 
-  useIncidentWebSocket(incident?.id, handleWebSocketMessage);
+  useIncidentWebSocket(incident?.id, (wsMessage) => {
+  if (wsMessage.status === "TRIAGED" && wsMessage.incident) {
+    setIncident(wsMessage.incident);
+  }
+});
+
+const chatEndRef = useRef<HTMLDivElement | null>(null);
+
+useEffect(() => {
+  chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+}, [chatMessages]);
 
   useEffect(() => {
     const fetchIncident = async () => {
@@ -31,7 +48,7 @@ const IncidentDetailsPage: React.FC = () => {
 
       try {
         const response = await IncidentService.getIncidentById(currentIncident.id);
-        setIncident(response.data);
+        setIncident(response.data || response);
       } catch (err) {
         setError("Failed to fetch incident details");
       }
@@ -41,6 +58,28 @@ const IncidentDetailsPage: React.FC = () => {
     
   }, [currentIncident]);
 
+  useEffect(() => {
+  const fetchChatHistory = async () => {
+    if (!currentIncident) return;
+
+    try {
+      const response = await AIChatService.getChatHistory(currentIncident.id, 0, 10);
+
+      const messages = response.data.items.map((msg: ChatMessageDTO) => ({
+        role: msg.role === "USER" ? "user" : "ai",
+        content: msg.message
+      }));
+
+      // reverse because backend sends DESC
+      setChatMessages(messages.reverse());
+    } catch (err) {
+      console.error("Failed to load chat history");
+    }
+  };
+
+  fetchChatHistory();
+}, [currentIncident?.id]);
+
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !incident) return;
 
@@ -48,11 +87,11 @@ const IncidentDetailsPage: React.FC = () => {
     setError("");
 
     try {
-      setChatMessages([...chatMessages, { role: "user", content: newMessage }]);
+      setChatMessages(prev => [...prev, { role: "user", content: newMessage }]);
       setNewMessage("");
 
       const response = await AIChatService.chat(incident.id, newMessage);
-      setChatMessages([...chatMessages, { role: "user", content: newMessage }, { role: "ai", content: response.data.answer }]);
+      setChatMessages(prev => [...prev, { role: "ai", content: response.data.answer }]);
     } catch (err) {
       setError("Failed to get AI response");
     } finally {
@@ -67,20 +106,22 @@ const IncidentDetailsPage: React.FC = () => {
     <div className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.title} style={{
-          backgroundImage: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}80 100%)`,
+          backgroundColor: "white",
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text'
         }}>Incident Details</h1>
-        <button className={styles.backButton} onClick={() => navigateTo("history")} style={{
-          borderColor: primaryColor,
-          color: primaryColor
-        }}>Back to History</button>
       </div>
 
-      <div className={styles.content}>
+      <div 
+      className={styles.content}>
         {/* Incident Details */}
-        <div className={styles.incidentDetails}>
+        <div 
+        className={styles.incidentDetails}
+        style={{
+          borderColor: primaryColor,
+          boxShadow: `0 0 10px ${primaryColor}20`
+        }}>
           <div className={styles.detailsHeader}>
             <h2>{incident.title}</h2>
             <div className={`${styles.status} ${styles[incident.status?.toString().toLowerCase() || '']}`}>
@@ -99,9 +140,12 @@ const IncidentDetailsPage: React.FC = () => {
           </div>
 
           {incident.severity && (
-            <div className={styles.detailsSection}>
+            <div style={{
+              color: "#aaa",
+              fontWeight: 600
+              }}>
               <h3>Severity</h3>
-              <p>{incident.severity || "N/A"}</p>
+              <p className={styles[incident.severity?.toLocaleLowerCase() || ""]}>{incident.severity || "N/A"}</p>
             </div>
           )}
 
@@ -121,7 +165,12 @@ const IncidentDetailsPage: React.FC = () => {
         </div>
 
         {/* AI Chat */}
-        <div className={styles.aiChat}>
+        <div 
+        className={styles.aiChat}
+        style={{
+          borderColor: primaryColor,
+          boxShadow: `0 0 10px ${primaryColor}20`
+        }}>
           <h3 className={styles.chatTitle}>AI Assistant</h3>
           
           {error && <div className={styles.error}>{error}</div>}
@@ -132,6 +181,7 @@ const IncidentDetailsPage: React.FC = () => {
                 <div className={styles.messageContent}>{message.content}</div>
               </div>
             ))}
+            <div ref={chatEndRef} />
           </div>
 
           <div className={styles.chatInputContainer}>

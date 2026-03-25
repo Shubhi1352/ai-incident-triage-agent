@@ -45,14 +45,13 @@ export default function Home() {
       </div>
       
       {/* Incident Details Page */}
-      {currentPage === "incident" && (
-        <div className={styles.incidentPageContainer} style={{
-          transform: `translateX(${(isIncidentTransitioning ? 100 : 0)}%)`,
-          opacity: isIncidentTransitioning ? 0 : 1
-        }}>
-          <IncidentDetailsPage/>
-        </div>
-      )}
+      <div className={styles.incidentPageContainer} style={{
+          transform: `translateX(${currentPage === "incident" ? 0 : currentPage  === "history" ? 100 : 100}%)`,
+          opacity: currentPage === "incident" ? 1 : 0,
+          pointerEvents: currentPage === "incident" ? "auto" : "none"
+      }}>
+        <IncidentDetailsPage/>
+      </div>
     </main>
   );
 }

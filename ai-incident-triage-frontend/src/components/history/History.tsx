@@ -11,7 +11,7 @@ import { useGlobalIncidentUpdates } from "@/hooks/useGlobalIncidentUpdates";
 const HistoryPageContent: React.FC = () => {
 
   const { primaryColor } = useColors();
-  const { navigateTo, setCurrentIncident } = usePage();
+  const { navigateTo, setCurrentIncident, currentPage: activePage } = usePage();
   const [incidents, setIncidents] = useState<IncidentResponseDTO[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -34,7 +34,7 @@ const HistoryPageContent: React.FC = () => {
   useGlobalIncidentUpdates(handleGlobalUpdates);
 
   // Fetch incidents from backend
-  const fetchIncidents = useCallback(async (page: number, title: string, severity: Severity | null, showFullLoader: boolean = true) => {
+  const fetchIncidents = async (page: number, title: string, severity: Severity | null, showFullLoader: boolean = true) => {
     if(showFullLoader) setIsLoading(true);
     else setIsPageLoading(true);
     setError("");
@@ -60,7 +60,7 @@ const HistoryPageContent: React.FC = () => {
       setIsLoading(false);
       setIsPageLoading(false);
     }
-  }, []);
+  };
 
   // Manual Search Handler (called on button click or Enter key)
   const handleSearch = () => {
@@ -146,39 +146,29 @@ const HistoryPageContent: React.FC = () => {
     return pages;
   };
 
-  const handlePageChange = (newPage: number) => {
+  const handlePageChange = async (newPage: number) => {
     if (newPage >= 0 && newPage < totalPages) {
       setIsPageLoading(true);
       setCurrentPage(newPage);
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      await fetchIncidents(newPage, searchTitle, searchSeverity, false);
     }
   };
 
-  // Initial load
   useEffect(() => {
-    const isInitialLoad = (currentPage === 0 && searchTitle === "" && searchSeverity === null && incidents.length === 0);
-    fetchIncidents(currentPage, searchTitle, searchSeverity, isInitialLoad);
-  }, [currentPage, searchTitle, searchSeverity]);
+  if (activePage === "history") {
+    setCurrentPage(0);
+  }
+}, [activePage]);
 
-  // useEffect(() => {
-  //   fetchIncidents(0, "", null, true);
-  // }, []);
+// ✅ Fetch when page changes
+useEffect(() => {
+  if (activePage === "history") {
+    fetchIncidents(currentPage, searchTitle, searchSeverity, true);
+  }
+}, [currentPage, activePage]);
 
   const showLoader = isLoading || isPageLoading;
-
-  // if (isLoading && incidents.length === 0) {
-  //   return (
-  //     <div className={styles.container}>
-  //       <h3 className={styles.title}>Incident History</h3>
-  //       <div className={styles.loading}>
-  //         <div className={styles.spinner} style={{ borderColor: primaryColor }}>
-  //           <div className={styles.spinnerInner} style={{ backgroundColor: primaryColor }}></div>
-  //         </div>
-  //         <p>Loading incidents...</p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
 
   return (
     <div className={styles.container}>
@@ -248,12 +238,7 @@ const HistoryPageContent: React.FC = () => {
         </div>
         
         <div className={styles.incidentList}>
-          {showLoader && incidents.length === 0 ? (
-             <div className={styles.loadingOverlay}>
-               <div className={styles.spinner} style={{ borderColor: primaryColor }}></div>
-               <p>Loading...</p>
-             </div>
-          ) : incidents.length > 0 ? (
+          {incidents.length > 0 ?(
             <>
             {incidents.map((incident, index) => (
                 <div 
@@ -285,18 +270,19 @@ const HistoryPageContent: React.FC = () => {
                     </button>
                   </div>
                 </div>
-            ))};
-            {isPageLoading && (
-              <div className={styles.pageLoadingIndicator}>
-                  <div className={styles.miniSpinner} style={{ borderTopColor: primaryColor }}></div>
-                </div>
-            )}
+            ))}
             </>
-          ) : (
+          ):(
             <div className={styles.emptyState}>
               <p>No incidents found</p>
             </div>
           )}
+            {showLoader && (
+              <div className={styles.loadingOverlay}>
+                <div className={styles.spinner} style={{ borderColor: primaryColor }}></div>
+                <p>Loading...</p>
+              </div>
+            )}
         </div>
         
         {/* ✅ Pagination - Google Style */}
@@ -343,7 +329,7 @@ const HistoryPageContent: React.FC = () => {
             <h4 className={styles.modalTitle}>Confirm Deletion</h4>
             <p className={styles.modalText}>
               Are you sure you want to delete:<br/>
-              <strong>"{deleteTarget.title}"</strong>?
+              <strong>{deleteTarget.title}</strong>?
             </p>
             <div className={styles.modalActions}>
               <button className={styles.cancelBtn} onClick={cancelDelete}>Cancel</button>

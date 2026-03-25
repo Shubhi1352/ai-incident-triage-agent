@@ -24,9 +24,6 @@ const CreateIncidentForm: React.FC = () => {
     if (wsMessage.status === "TRIAGED" && wsMessage.incident) {
       setStatusMessage("Analysis Complete! Opening details...");
       setCurrentIncident(wsMessage.incident);
-      setTimeout(()=>{
-        navigateTo("incident");
-      }, 800);
     } else if (wsMessage.status === "FAILED") {
       setError("AI Analysis failed. Please check history.");
       setIsLoading(false);
@@ -47,19 +44,21 @@ const CreateIncidentForm: React.FC = () => {
       }
 
       const response = await IncidentService.createIncident({ title, description, errorLog });
-      const createdId = response?.data?.id || response?.id;
-      if(!createdId) throw new Error("Failed to get incident ID");
+      const createdIncident = response?.data;
+      if(!createdIncident?.id) throw new Error("Failed to get incident ID");
       setTitle("");
       setDescription("");
       setErrorLog("");
-      setIncidentId(createdId);
+      setCurrentIncident(createdIncident);
+      setIncidentId(createdIncident.id);
+      navigateTo("incident");
+      setIsLoading(false);
+
       //navigateTo("history");
     } catch (err) {
       setError("Failed to create incident. Please try again.");
-    } finally {
-      setIsLoading(false);
     }
-  };
+  };  
 
   return (
     <div className={styles.container}>

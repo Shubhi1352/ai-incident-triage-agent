@@ -1,15 +1,15 @@
+'use client';
 // src/contexts/PageContext.tsx
-"use client";
-import { Incident, Severity, Status } from "@/components/history/History";
 import React, { createContext, useContext, useState } from "react";
+import { IncidentResponseDTO } from "@/service/api";
 
 type Page = "home" | "create" | "history" | "incident";
 
 interface PageContextType {
   currentPage: Page;
   navigateTo: (page: Page) => void;
-  currentIncident: Incident | null;
-  setCurrentIncident: (incident: Incident | null) => void;
+  currentIncident: IncidentResponseDTO | null;
+  setCurrentIncident: (incident: IncidentResponseDTO | null) => void;
   isWebSocketLoading: boolean;
   setIsWebSocketLoading: (loading: boolean) => void;
   isIncidentTransitioning: boolean;
@@ -20,7 +20,7 @@ const PageContext = createContext<PageContextType | undefined>(undefined);
 
 export const PageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentPage, setCurrentPage] = useState<Page>("home");
-  const [currentIncident, setCurrentIncident] = useState<Incident | null>(null);
+  const [currentIncident, setCurrentIncident] = useState<IncidentResponseDTO | null>(null);
   const [isWebSocketLoading, setIsWebSocketLoading] = useState<boolean>(false);
   const [isIncidentTransitioning, setIsIncidentTransitioning] = useState<boolean>(false);
 
