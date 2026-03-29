@@ -2,10 +2,9 @@
   position: absolute;
   inset: 0;
   z-index: 10;
-  /*background: rgba(0, 0, 0, 0.75);*/
-  /*backdrop-filter: blur(10px);*/
   padding: 4rem 1rem 1rem;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* ✅ CENTERED HEADER */
@@ -29,6 +28,7 @@
   gap: 1.5rem;
   max-width: 1100px;
   margin: 0 auto;
+  min-width: 0;
 }
 
 /* ================= LEFT PANEL ================= */
@@ -38,6 +38,27 @@
   background: rgba(20,20,35,0.6);
   backdrop-filter: blur(20px);
   padding: 1.5rem;
+}
+
+.incidentDetails, .aiChat {
+  min-width: 0;
+}
+
+.detailsSection p, .chatMessage, .errorLog {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+.errorLog {
+  background: rgba(0,0,0,0.5);
+  border-radius: 6px;
+  padding: 0.8rem;
+  font-size: 0.75rem;
+  color: #ddd;
+  overflow-x: auto;
+  white-space: pre-wrap; /* ✅ Wrap error logs correctly */
 }
 
 /* header inside card */
@@ -128,6 +149,9 @@
   border-radius: 12px;
   font-size: 0.8rem;
   line-height: 1.4;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-width: 0;
 }
 
 /* user (right side) */
@@ -242,4 +266,124 @@
 .low {
   color: #00d084;
   font-weight: 600;
+}
+
+/* =========================================
+   EDITABLE FIELDS STYLES
+   ========================================= */
+
+.viewRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fieldHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+
+.editControls {
+  display: flex;
+  gap: 0.5rem;
+  opacity: 1; /* Make sure they are visible */
+}
+
+.iconButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  color: #aaa;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconButton:hover:not(.disabledIcon):not(:disabled) {
+  background: rgba(255,255,255,0.1);
+  color: white;
+}
+
+.disabledIcon {
+  opacity: 0.3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.saveButtons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.saveBtn, .cancelBtn {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+}
+
+.saveBtn {
+  background-color: #00d084; /* Green */
+}
+
+.saveBtn:hover {
+  background-color: #00a86b;
+}
+
+.cancelBtn {
+  background-color: rgba(255, 70, 70, 0.2); /* Red */
+}
+
+.cancelBtn:hover {
+  background-color: rgba(255, 70, 70, 0.4);
+}
+
+/* Input Styles */
+.editInputContainer {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.editInput, .editTextArea, .codeEditor {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 0.5rem;
+  color: #fff;
+  font-family: inherit;
+  font-size: inherit;
+  resize: vertical;
+}
+
+.editInput:focus, .editTextArea:focus, .codeEditor:focus {
+  outline: none;
+  border-color: var(--primary-color, #ffd000); /* Or use your primary color dynamically */
+  box-shadow: 0 0 8px rgba(255,255,255,0.1);
+}
+
+.editPre {
+  margin: 0;
+  overflow-x: auto;
+  width: 100%;
+}
+
+.codeEditor {
+  font-family: 'Courier New', Courier, monospace;
+  line-height: 1.4;
+  color: #ddd;
 }

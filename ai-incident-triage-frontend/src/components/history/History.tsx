@@ -25,7 +25,7 @@ const HistoryPageContent: React.FC = () => {
   const [deleteTarget, setDeleteTarget] = useState<{ id: number; title: string } | null >(null);
 
   const handleGlobalUpdates = (message: IncidentWSMessage) => {
-    if(message.status === Status.TRIAGED ){
+    if(message.status === Status.TRIAGED || message.status === Status.FAILED ){
       console.log("🔄 Incident triaged via WS. Refreshing history list...");
       fetchIncidents(currentPage, searchTitle, searchSeverity, false);
     }

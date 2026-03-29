@@ -41,6 +41,12 @@ export interface IncidentResponseDTO {
     createdAt: string;
 }
 
+export interface IncidentUpdateRequestDTO {
+    title: string;
+    description: string;
+    errorLog: string;
+}
+
 export interface PageResponse<T> {
     items: T[];
     currentPage: number;
@@ -107,7 +113,7 @@ export const IncidentService = {
   },
 
   // Update incident
-  updateIncident: async (incidentId: number, incident: { title: string; description: string }) => {
+  updateIncident: async (incidentId: number, incident: IncidentUpdateRequestDTO) => {
     const response = await fetch(`${BASE_URL}/incidents/update/${incidentId}`, {
       method: 'PUT',
       headers: headers,

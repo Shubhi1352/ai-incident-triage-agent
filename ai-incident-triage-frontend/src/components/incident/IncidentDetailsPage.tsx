@@ -5,9 +5,10 @@ import React, { useEffect, useState, useRef } from "react";
 import styles from "./IncidentDetailsPage.module.css";
 import { usePage } from "@/contexts/PageContext";
 import { useColors } from "@/contexts/ColorContext";
-import { AIChatService, IncidentService, IncidentWSMessage } from "@/service/api";
-import { IncidentResponseDTO } from "@/service/api";
-import { useIncidentWebSocket } from "@/hooks/useIncidentWebSocket"
+import { AIChatService, IncidentService, IncidentWSMessage,ApiStandardResponse } from "@/service/api";
+import { IncidentResponseDTO, IncidentUpdateRequestDTO } from "@/service/api";
+import { useIncidentWebSocket } from "@/hooks/useIncidentWebSocket";
+import { Pencil, Check, X, Loader2 } from "lucide-react";
 
 enum ChatRole{
   USER = "USER",
@@ -20,6 +21,8 @@ interface ChatMessageDTO {
     createdAt: string;
 }
 
+type EditableField = 'title' | 'description' | 'errorLog';
+
 const IncidentDetailsPage: React.FC = () => {
   
   const { currentIncident, navigateTo } = usePage();
@@ -29,9 +32,16 @@ const IncidentDetailsPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [incident, setIncident] = useState<IncidentResponseDTO | null>(currentIncident);
+  const [isProcessingApi, setIsProcessingApi] = useState(false);
+  const [activeEditField, setActiveEditField] = useState<EditableField | null>(null);
+  const [editValues, setEditValues] = useState({
+    title: '',
+    description: '',
+    errorLog: ''
+  });
 
   useIncidentWebSocket(incident?.id, (wsMessage) => {
-  if (wsMessage.status === "TRIAGED" && wsMessage.incident) {
+  if ((wsMessage.status === "TRIAGED" || wsMessage.status === "FAILED") && wsMessage.incident) {
     setIncident(wsMessage.incident);
   }
 });
@@ -80,6 +90,62 @@ useEffect(() => {
   fetchChatHistory();
 }, [currentIncident?.id]);
 
+const handleStartEdit = (field: EditableField) => {
+    if (!incident) return;
+    setActiveEditField(field);
+    
+    // Initialize edit values with current data
+    setEditValues(prev => ({
+      ...prev,
+      [field]: incident[field as keyof typeof incident] || ""
+    }));
+  };
+
+  // ✅ HANDLE CANCEL EDIT
+  const handleCancelEdit = () => {
+    setActiveEditField(null);
+  };  
+
+  // ✅ HANDLE SAVE UPDATE
+  const handleSaveUpdate = async () => {
+    if (!incident) return;
+    if (!activeEditField) return;
+    
+    setIsProcessingApi(true);
+    try {
+      const payload: IncidentUpdateRequestDTO = {
+        title: incident.title,
+        description: incident.description,
+        errorLog: incident.errorLog
+      };
+      
+      // Only send the field that was actually changed
+      if (activeEditField === 'title') payload.title = editValues.title;
+      if (activeEditField === 'description') payload.description = editValues.description;
+      if (activeEditField === 'errorLog') payload.errorLog = editValues.errorLog;
+
+      const response: ApiStandardResponse<IncidentResponseDTO> = await IncidentService.updateIncident(incident.id, payload);
+      
+      if (response.success) {
+        // Optimistically update the state
+        setIncident(prev => prev ? { ...prev, [activeEditField]: editValues[activeEditField as keyof typeof editValues] } : null);
+        setActiveEditField(null);
+        setError("");
+      } else {
+        setError(response.message || "Failed to update");
+      }
+    } catch (err) {
+      setError("Error saving changes");
+      console.error(err);
+    } finally {
+      setIsProcessingApi(false);
+    }
+  };
+
+  // ✅ CHECK IF UPDATES ARE ALLOWED
+  const canEdit = incident && (incident.status === "TRIAGED" || incident.status === "FAILED");
+
+
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !incident) return;
 
@@ -102,6 +168,36 @@ useEffect(() => {
   if (!incident) return <div className={styles.loading}>Loading incident details...</div>;
   if (error) return <div className={styles.error}>{error}</div>;
 
+  const EditControls = ({ fieldName }: { fieldName: EditableField }) => {
+    const isActive = activeEditField === fieldName;
+    const isDisabled = !canEdit && !isActive; 
+    return (
+      <div className={styles.editControls}>
+        {!isActive && (
+          <button 
+            onClick={() => handleStartEdit(fieldName)}
+            disabled={!canEdit}
+            className={`${styles.iconButton} ${!canEdit ? styles.disabledIcon : ''}`}
+            title={canEdit ? "Edit" : "Locked during AI processing"}
+          >
+            <Pencil size={16} />
+          </button>
+        )}
+        
+        {isActive && (
+          <div className={styles.saveButtons}>
+            <button onClick={handleSaveUpdate} className={styles.saveBtn} disabled={isProcessingApi}>
+              {isProcessingApi ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+            </button>
+            <button onClick={handleCancelEdit} className={styles.cancelBtn}>
+              <X size={16} />
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }; 
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -123,20 +219,64 @@ useEffect(() => {
           boxShadow: `0 0 10px ${primaryColor}20`
         }}>
           <div className={styles.detailsHeader}>
-            <h2>{incident.title}</h2>
+            {activeEditField === 'title' ? (
+               <div className={styles.editInputContainer}>
+                 <input 
+                   type="text" 
+                   value={editValues.title}
+                   onChange={(e) => setEditValues({...editValues, title: e.target.value})}
+                   className={styles.editInput}
+                   autoFocus
+                 />
+                 <EditControls fieldName="title" />
+               </div>
+             ) : (
+                <div className={styles.viewRow}>
+                  <h2>{incident.title}</h2>
+                  <EditControls fieldName="title" />
+                </div>
+             )}
             <div className={`${styles.status} ${styles[incident.status?.toString().toLowerCase() || '']}`}>
               {incident.status}
             </div>
           </div>
 
           <div className={styles.detailsSection}>
-            <h3>Description</h3>
-            <p>{incident.description}</p>
+            <div className={styles.fieldHeader}>
+              <h3>Description</h3>
+              <EditControls fieldName="description" />
+            </div>
+            
+            {activeEditField === 'description' ? (
+              <textarea 
+                value={editValues.description}
+                onChange={(e) => setEditValues({...editValues, description: e.target.value})}
+                className={styles.editTextArea}
+                rows={4}
+              />
+            ) : (
+              <p>{incident.description}</p>
+            )}
           </div>
 
           <div className={styles.detailsSection}>
-            <h3>Error Log</h3>
-            <pre className={styles.errorLog}>{incident.errorLog}</pre>
+            <div className={styles.fieldHeader}>
+              <h3>Error Log</h3>
+              <EditControls fieldName="errorLog" />
+            </div>
+
+            {activeEditField === 'errorLog' ? (
+              <pre className={styles.editPre}>
+                <textarea
+                  value={editValues.errorLog}
+                  onChange={(e) => setEditValues({...editValues, errorLog: e.target.value})}
+                  className={styles.codeEditor}
+                  rows={8}
+                />
+              </pre>
+            ) : (
+              <pre className={styles.errorLog}>{incident.errorLog}</pre>
+            )}
           </div>
 
           {incident.severity && (

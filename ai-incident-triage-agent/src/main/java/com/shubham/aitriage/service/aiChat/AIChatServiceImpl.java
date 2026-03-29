@@ -12,7 +12,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shubham.aitriage.dto.AIChatResponse;
 import com.shubham.aitriage.dto.ChatMessageDTO;
 import com.shubham.aitriage.dto.PageResponse;
@@ -29,12 +33,19 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AIChatServiceImpl implements AIChatService{
 
-    @Value("${ai.ollama.url}")
-    private String ollamaUrl;
+    @Value("${ai.huggingface.url}")
+    private String url;
+
+    @Value("${ai.huggingface.token}")
+    private String token;
+
+    @Value("${ai.huggingface.model}")
+    private String model;
 
     private final IncidentRepository incidentRepository;
     private final IncidentChatRepository chatRepository;
     private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
 
     private ChatMessageDTO mapChatMessageDTO(IncidentChat incidentChat){
         return ChatMessageDTO.builder()
@@ -59,9 +70,7 @@ public class AIChatServiceImpl implements AIChatService{
 
         List<IncidentChat> history = chatRepository.findTop5ByIncidentIdOrderByCreatedAtAsc(incidentId);
 
-        StringBuilder prompt = new StringBuilder();
-
-        prompt.append("""
+        String systemPrompt = """
             You are a senior backend engineer and DevOps assistant.
 
             Your job is to help developers debug production incidents.
@@ -80,43 +89,78 @@ public class AIChatServiceImpl implements AIChatService{
             Error Log: %s
             Root Cause: %s
             AI Suggested Fix: %s
-
-            Conversation:
             """.formatted(
                 incident.getTitle(),
                 incident.getDescription(),
                 incident.getErrorLog(),
                 incident.getRootCause(),
                 incident.getAiSuggestion()
-            )
-        );
+            );
+
+        // ✅ New proper messages format
+        var messages = new java.util.ArrayList<>();
+        messages.add(Map.of("role", "system", "content", systemPrompt));
 
         for(IncidentChat chat : history){
-            prompt.append(chat.getRole())
-                .append(": ")
-                .append(chat.getMessage())
-                .append("\n");
+            messages.add(Map.of(
+                "role", chat.getRole() == ChatRole.USER ? "user" : "assistant",
+                "content", chat.getMessage()
+            ));
         }
-        prompt.append("AI:");
-        Map<String, Object> body = new HashMap<>();
-        body.put("model","phi3");
-        body.put("prompt", prompt.toString());
-        body.put("stream",false);
 
-        Map response = restTemplate.postForObject(
-            ollamaUrl+"/generate", body, Map.class);
-        String aiText = (String)response.get("response");
-        chatRepository.save(
-            IncidentChat.builder()
-                .incidentId(incidentId)
-                .role(ChatRole.AI)
-                .message(aiText)
-                .createdAt(LocalDateTime.now())
-                .build()
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+        headers.add("X-Huggingface-Client", "openai");
+        headers.add("Accept", "application/json");
+
+        Map<String, Object> body = Map.of(
+            "model", model,
+            "temperature", 0.7,
+            "max_tokens", 1024,
+            "messages", messages
         );
-        return AIChatResponse.builder()
-            .answer(aiText)
-            .build();
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+
+        // ✅ Correct URL, no model appended
+        String response = restTemplate.postForObject(
+            url,
+            request,
+            String.class
+        );
+
+        if (response == null || response.isEmpty()) {
+            throw new RuntimeException("AI returned empty response");
+        }
+
+        try {
+            // ✅ Correct response parsing
+            JsonNode root = objectMapper.readTree(response);
+            String aiText = root
+                .get("choices")
+                .get(0)
+                .get("message")
+                .get("content")
+                .asText()
+                .trim();
+
+            chatRepository.save(
+                IncidentChat.builder()
+                    .incidentId(incidentId)
+                    .role(ChatRole.AI)
+                    .message(aiText)
+                    .createdAt(LocalDateTime.now())
+                    .build()
+            );
+
+            return AIChatResponse.builder()
+                .answer(aiText)
+                .build();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse AI response", e);
+        }
     }
 
     @Override

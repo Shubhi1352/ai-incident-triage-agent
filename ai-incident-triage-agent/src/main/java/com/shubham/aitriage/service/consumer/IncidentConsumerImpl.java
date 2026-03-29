@@ -74,22 +74,6 @@ public class IncidentConsumerImpl implements IncidentConsumer{
         }catch (Exception e){
             log.error("Failed to process incident {}", incidentId, e);
             handleFailure(incidentId);
-            messagingTemplate.convertAndSend(
-                "/topic/incidents/" + incidentId,
-                new IncidentWSMessage(
-                    Status.FAILED,
-                    "AI analysis failed :(",
-                    null
-                )
-            );
-            messagingTemplate.convertAndSend(
-                "/topic/incidents",
-                new IncidentWSMessage(
-                    Status.FAILED,
-                    "AI analysis failed :(",
-                    null
-                )
-            );
         }
     }
 
@@ -112,9 +96,17 @@ public class IncidentConsumerImpl implements IncidentConsumer{
                     new IncidentWSMessage(
                         Status.FAILED, 
                         "AI analysis failed after 3 attempts", 
-                        null
+                        incident
                     )
                 );
+                messagingTemplate.convertAndSend(
+                "/topic/incidents",
+                new IncidentWSMessage(
+                    Status.FAILED,
+                    "AI analysis failed :(",
+                    incident
+                )
+            );
             }
         } catch (Exception ex) {
             log.error("Critical error while handling failure for incident {}", incidentId, ex);

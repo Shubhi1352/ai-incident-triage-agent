@@ -1,11 +1,11 @@
 spring:
   data:
     redis:
-      host: localhost
+      host: redis
       port: 6379
   
   datasource:
-    url: jdbc:postgresql://localhost:5432/triagedb
+    url: jdbc:postgresql://postgres:5432/triagedb
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
@@ -23,27 +23,29 @@ spring:
     serialization:
       write-dates-as-timestamps: false
 
-server:
-  error:
-    include-stacktrace: never
-
-ai:
-  ollama:
-    url: http://localhost:11434/api
-    model: phi3
-    num_ctx: 2048
-    num_threads: 4
-    num_gpu: 0
-
-
-rabbitmq:
-    host: localhost
+  rabbitmq:
+    host: rabbitmq
     port: 5672
     username: guest
     password: guest
     virtual-host: /
+    connection-timeout: 5000
     listener:
       simple:
         concurrency: 3
         max-concurrency: 5
         auto-startup: true
+        declaration-retries: 10
+        missing-queues-fatal: false
+        recovery-backoff: 5000
+
+server:
+  error:
+    include-stacktrace: never
+
+ai:
+  provider: huggingface
+  huggingface:
+    url: https://router.huggingface.co/v1/chat/completions
+    model: ${HF_MODEL}
+    token: ${HF_TOKEN}

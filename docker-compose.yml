@@ -1,0 +1,52 @@
+version: "3.9"
+
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: triage-postgres
+    environment:
+      POSTGRES_DB: triagedb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: triage-redis
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: triage-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  backend:
+    build: ./ai-incident-triage-agent
+    container_name: triage-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    env_file:
+      - .env
+    restart: always
+    
+  frontend:
+    build: ./ai-incident-triage-frontend
+    container_name: triage-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
