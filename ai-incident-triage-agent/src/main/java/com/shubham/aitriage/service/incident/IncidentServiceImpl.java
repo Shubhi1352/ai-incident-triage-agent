@@ -138,6 +138,7 @@ public class IncidentServiceImpl implements IncidentService {
     public void deleteIncident(Long id){
         Incident incident = incidentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Incident not found with id: "+id));
         incidentRepository.delete(incident);
+        chatRepository.deleteAllByIncidentId(id);
     }
 
     @Cacheable(value = INCIDENT_PAGE_CACHE, key = "#page + '-' + #size + '-' + #severity + '-' + #title")

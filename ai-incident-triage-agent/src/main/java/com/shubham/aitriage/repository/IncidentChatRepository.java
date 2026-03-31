@@ -13,4 +13,5 @@ import com.shubham.aitriage.entity.IncidentChat;
 public interface IncidentChatRepository extends JpaRepository<IncidentChat,Long>{
     List<IncidentChat> findTop5ByIncidentIdOrderByCreatedAtAsc(Long incidentId);
     Page<IncidentChat> findByIncidentId(Long incidentId,Pageable pageable);
+    void deleteAllByIncidentId(Long incidentId);
 }
