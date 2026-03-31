@@ -148,4 +148,25 @@ public class IncidentController {
             .build();
         return ResponseEntity.ok(apiresponse);
     }
+
+    @Operation(summary = "Retry processing for a failed incident")
+    @PostMapping("/retry/{id}")
+    public ResponseEntity<ApiStandardResponse<Void>> retryIncident(@PathVariable Long id){
+        try {
+            incidentService.retryIncident(id); // Call the new service method
+            return ResponseEntity.ok(ApiStandardResponse.<Void>builder()
+                .success(true)
+                .message("Retrying AI analysis...")
+                .timestamp(LocalDateTime.now())
+                .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiStandardResponse.<Void>builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .timestamp(LocalDateTime.now())
+                            .build());
+        }
+    }
+
 }

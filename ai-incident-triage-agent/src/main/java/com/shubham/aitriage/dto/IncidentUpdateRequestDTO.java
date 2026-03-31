@@ -12,5 +12,7 @@ public class IncidentUpdateRequestDTO {
     @NotBlank(message = "Description is required")
     @Size(max = 2000, message = "Description must be at most 2000 characters")
     private String description;
+    @Size(max = 2000, message = "Error log must be at most 2000 characters")
+    private String errorLog;
 
 }

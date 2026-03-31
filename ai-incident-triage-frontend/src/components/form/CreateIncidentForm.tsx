@@ -51,12 +51,12 @@ const CreateIncidentForm: React.FC = () => {
       setErrorLog("");
       setCurrentIncident(createdIncident);
       setIncidentId(createdIncident.id);
-      navigateTo("incident");
       setIsLoading(false);
+      navigateTo("incident");
 
-      //navigateTo("history");
     } catch (err) {
       setError("Failed to create incident. Please try again.");
+      setIsLoading(false);
     }
   };  
 

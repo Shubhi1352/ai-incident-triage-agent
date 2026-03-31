@@ -7,11 +7,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import lombok.RequiredArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
+
+import com.shubham.aitriage.repository.IncidentChatRepository;
 import com.shubham.aitriage.repository.IncidentRepository;
 import com.shubham.aitriage.service.producer.IncidentProducer;
 import com.shubham.aitriage.exception.ResourceNotFoundException;
@@ -23,6 +26,9 @@ import com.shubham.aitriage.dto.PageResponse;
 import com.shubham.aitriage.entity.Incident;
 import com.shubham.aitriage.enums.Severity;
 import com.shubham.aitriage.enums.Status;
+import com.shubham.aitriage.enums.ChatRole;
+import com.shubham.aitriage.entity.IncidentChat;
+import com.shubham.aitriage.dto.IncidentWSMessage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;  
@@ -37,6 +43,8 @@ public class IncidentServiceImpl implements IncidentService {
 
     private final IncidentRepository incidentRepository;
     private final IncidentProducer incidentProducer;
+    private final IncidentChatRepository chatRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     private IncidentResponseDTO mapToResponseDTO(Incident incident) {
     return IncidentResponseDTO.builder()
@@ -92,8 +100,36 @@ public class IncidentServiceImpl implements IncidentService {
         Incident incident =  incidentRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Incident not found with id: "+id));
         incident.setTitle(request.getTitle());
         incident.setDescription(request.getDescription());
-        incident.setStatus(Status.OPEN);
+        incident.setErrorLog(request.getErrorLog());
+        incident.setStatus(Status.PROCESSING);
         Incident updatedIncident = incidentRepository.save(incident);
+        chatRepository.save(IncidentChat.builder()
+            .incidentId(id)
+            .role(ChatRole.SYSTEM)
+            .message("Incident details updated...")
+            .createdAt(LocalDateTime.now())
+            .build()
+        );
+
+        messagingTemplate.convertAndSend(
+            "/topic/incidents/" + id,
+            new IncidentWSMessage(
+                Status.PROCESSING,
+                "Incident details updated. Re-processing incident...",
+                updatedIncident
+            ) 
+        );
+
+        messagingTemplate.convertAndSend(
+            "/topic/incidents",
+            new IncidentWSMessage(
+                Status.PROCESSING,
+                "Incident details updated. Re-processing incident...",
+                updatedIncident
+            )
+        );
+
+        incidentProducer.sendIncidentForProcessing(updatedIncident.getId());
         return mapToResponseDTO(updatedIncident);
     }
 
@@ -145,4 +181,48 @@ public class IncidentServiceImpl implements IncidentService {
         
         return saved;
     }
+
+    @CacheEvict(value = {INCIDENT_CACHE, INCIDENT_PAGE_CACHE}, allEntries = true)
+@Override
+public void retryIncident(Long id) {
+    Incident incident = incidentRepository.findById(id).orElseThrow(() -> 
+        new ResourceNotFoundException("Incident not found with id: " + id));
+    
+    // Reset Status & Retry Count
+    incident.setStatus(Status.PROCESSING);
+    incident.setRetryCount(0); // Start fresh
+    
+    Incident updatedIncident = incidentRepository.save(incident);
+    log.info("Manually re-triggering processing for incident {}", id);
+    
+    // Push back to queue
+    incidentProducer.sendIncidentForProcessing(updatedIncident.getId());
+
+    chatRepository.save(IncidentChat.builder()
+        .incidentId(id)
+        .role(ChatRole.SYSTEM)
+        .message("AI Analysis rerun requested by user.")
+        .createdAt(LocalDateTime.now())
+        .build()
+    );
+    
+    // Notify Frontend immediately
+    messagingTemplate.convertAndSend(
+        "/topic/incidents/" + id,
+        new IncidentWSMessage(
+            Status.PROCESSING,
+            "Analysis retried by user",
+            updatedIncident
+        ) 
+    );
+    
+    messagingTemplate.convertAndSend(
+        "/topic/incidents",
+        new IncidentWSMessage(
+            Status.PROCESSING,
+            "Incident re-queued for analysis",
+            updatedIncident
+        )
+    );
+}
 }

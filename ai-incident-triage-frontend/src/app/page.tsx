@@ -17,13 +17,15 @@ export default function Home() {
   return (
     <main className={styles.main}>
       <Navbar />
-      
+      <div style={{ pointerEvents: "none"}}>
       <TubeCursorBackground/> 
-      
+      </div>
+
       {/* Home Page */}
       <div className={`${styles.page} ${styles.home}`} style={{
         transform: `translateX(${(currentPage === "home" ? 0 : currentPage === "create" ? -100 : -200)}%)`,
-        opacity: currentPage === "incident" ? 0 : 1
+        opacity: currentPage === "incident" ? 0 : 1,
+        pointerEvents: currentPage === "home" ? "auto" : "none"
       }}>
         <HeroContent/>
       </div>
@@ -31,7 +33,8 @@ export default function Home() {
       {/* Create Page */}
       <div className={`${styles.page} ${styles.create}`} style={{
         transform: `translateX(${(currentPage === "home" ? 100 : currentPage === "create" ? 0 : -100)}%)`,
-        opacity: currentPage === "incident" ? 0 : 1
+        opacity: currentPage === "incident" ? 0 : 1,
+        pointerEvents: currentPage === "create" ? "auto" : "none"
       }}>
         <CreateIncidentForm/>
       </div>
@@ -39,7 +42,8 @@ export default function Home() {
       {/* History Page */}
       <div className={`${styles.page} ${styles.history}`} style={{
         transform: `translateX(${(currentPage === "incident" || isIncidentTransitioning ? -100 : currentPage === "home" ? 200 : currentPage === "create" ? 100 : 0)}%)`,
-        opacity: currentPage === "incident" || isIncidentTransitioning ? 0 : 1
+        opacity: currentPage === "incident" || isIncidentTransitioning ? 0 : 1,
+        pointerEvents: currentPage === "history" ? "auto" : "none"
       }}>
         <HistoryPageContent/>
       </div>

@@ -18,4 +18,5 @@ public interface IncidentService {
     public void deleteIncident(Long id);
     public PageResponse<IncidentResponseDTO> getIncidents(int page, int size, Severity severity,String title);
     public Incident processAIResult(Long incidentId, AIAnalysisResponse analysisResponse);
+    public void retryIncident(Long id);
 }

@@ -11,7 +11,6 @@ import com.shubham.aitriage.service.aiAnalysis.AIAnalysisService;
 import com.shubham.aitriage.service.incident.IncidentService;
 import com.shubham.aitriage.config.RabbitMQConfig;
 import com.shubham.aitriage.dto.AIAnalysisResponse;
-import com.shubham.aitriage.dto.IncidentResponseDTO;
 import com.shubham.aitriage.dto.IncidentWSMessage;
 import com.shubham.aitriage.exception.ResourceNotFoundException;
 import com.shubham.aitriage.entity.Incident;

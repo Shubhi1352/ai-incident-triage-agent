@@ -171,6 +171,21 @@ export const IncidentService = {
 
     return response.json();
   },
+
+  retryIncident: async (incidentId: number) => {
+    try {
+      const response = await fetch(`${BASE_URL}/incidents/retry/${incidentId}`, {
+        method: 'POST',
+        headers: headers,
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || 'Failed to retry');
+        return result;
+    } catch (error) {
+      console.error("Retry failed", error);
+      throw error;
+    }
+  },
 };
 
 // AI Chat API Service
