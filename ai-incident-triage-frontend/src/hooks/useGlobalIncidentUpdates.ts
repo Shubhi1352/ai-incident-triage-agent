@@ -4,7 +4,9 @@ import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { IncidentWSMessage, Status } from '@/service/api';
 
-let globalClient: Client | null = null;   // ← Singleton pattern
+let globalClient: Client | null = null;  
+
+const WS_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 export const useGlobalIncidentUpdates = (onUpdate: (message: IncidentWSMessage) => void) => {
   
@@ -20,7 +22,7 @@ export const useGlobalIncidentUpdates = (onUpdate: (message: IncidentWSMessage) 
     console.log("🔌 Creating global WebSocket connection...");
 
     const client = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+      webSocketFactory: () => new SockJS(`${WS_BASE_URL}/ws`),
       reconnectDelay: 5000,
       debug: (str: string) => console.log('[STOMP Global]', str),
     });
