@@ -4,6 +4,8 @@ import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { IncidentWSMessage } from '@/service/api';
 
+const WS_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+
 export const useIncidentWebSocket = (
   incidentId?: number,
   onMessage?: (message: IncidentWSMessage) => void
@@ -19,7 +21,7 @@ export const useIncidentWebSocket = (
     if (!incidentId) return;
 
     const client = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+      webSocketFactory: () => new SockJS(`${WS_BASE_URL}/ws`),
       reconnectDelay: 5000,
       debug: (str: string) => console.log('[STOMP]', str),
     });
