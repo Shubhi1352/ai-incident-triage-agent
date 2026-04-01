@@ -19,7 +19,7 @@ public class CorsConfig {
         // ✅ Allow requests from frontend origin
         config.setAllowedOrigins(List.of(
             "http://localhost:3000",
-            "https://ai-incident-triage-agent-frontend-37ra2m88i.vercel.app"
+            "https://ai-incident-triage-agent-frontend.vercel.app"
         ));
         
         config.setAllowedHeaders(List.of("*"));
