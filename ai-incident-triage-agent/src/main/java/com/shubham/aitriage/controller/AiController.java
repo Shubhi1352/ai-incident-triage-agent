@@ -10,7 +10,6 @@ import com.shubham.aitriage.service.aiAnalysis.AIAnalysisService;
 import com.shubham.aitriage.dto.AIAnalysisRequest;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import java.util.Map;
 
 //for testing only
 @RestController
