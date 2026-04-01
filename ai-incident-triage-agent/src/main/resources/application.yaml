@@ -1,14 +1,15 @@
 spring:
   data:
     redis:
-      host: redis
-      port: 6379
+      url: ${SPRING_REDIS_URL:redis://redis:6379}
   
   datasource:
-    url: jdbc:postgresql://postgres:5432/triagedb
-    username: postgres
-    password: postgres
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres:5432/triagedb}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
 
   jpa:
     hibernate:
@@ -24,11 +25,11 @@ spring:
       write-dates-as-timestamps: false
 
   rabbitmq:
-    host: rabbitmq
-    port: 5672
-    username: guest
-    password: guest
-    virtual-host: /
+    host: ${RABBITMQ_HOST:rabbitmq}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    virtual-host: ${RABBITMQ_VIRTUAL_HOST:/}
     connection-timeout: 5000
     listener:
       simple:
