@@ -1,4 +1,4 @@
-# AI Incident Triage Agent
+# Between Errors
 
 An AI-powered full-stack application that automatically triages production incidents. Engineering teams submit incident details (title, description, error logs) and the system leverages Hugging Face LLMs to analyze each incident — determining severity, identifying root cause, and suggesting fixes.
 
